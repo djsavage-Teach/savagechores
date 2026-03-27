@@ -17,26 +17,55 @@
 
         body { 
             font-family: 'Lexend', sans-serif; 
-            background: #e2e8f0; 
+            background: #0f172a; 
             color: #1a202c; 
+            margin: 0;
+            padding: 0;
         }
 
-        /* Glassy App Container with Global Background */
-        #app {
+        /* Global Background Constant */
+        .app-bg {
             background-image: url('https://thumbs.dreamstime.com/b/stunning-cosmic-images-371141643.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            position: relative;
         }
 
-        /* Minimalist Glass Filter Overlay */
+        /* Splash Screen - More visible background */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+        
+        #loadingOverlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3); /* Slight tint for text readability */
+            z-index: -1;
+        }
+
+        /* Main App Container */
+        #app {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Minimalist Glass Filter Overlay for Main App */
         #app::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px) saturate(120%);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px) saturate(140%);
             z-index: 0;
         }
 
@@ -59,13 +88,12 @@
         }
 
         .card-glass { 
-            background: rgba(255, 255, 255, 0.4); 
+            background: rgba(255, 255, 255, 0.5); 
             backdrop-filter: blur(4px); 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
         }
 
-        /* Avatar fit helper */
         .fit-avatar {
             object-fit: contain !important;
             padding: 8px;
@@ -73,11 +101,11 @@
         }
 
         .loading-spinner { 
-            border: 4px solid rgba(0, 102, 204, 0.1); 
+            border: 4px solid rgba(255, 255, 255, 0.2); 
             width: 40px; 
             height: 40px; 
             border-radius: 50%; 
-            border-left-color: var(--theme-primary); 
+            border-left-color: white; 
             animation: spin 1s linear infinite; 
         }
 
@@ -89,7 +117,7 @@
 
         @keyframes sparkle-anim {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
+            50% { opacity: 0.6; transform: scale(1.1); }
         }
 
         .bonus-badge {
@@ -110,27 +138,36 @@
         }
 
         header {
-            background: rgba(255, 255, 255, 0.3) !important;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.35) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        .hidden-fade {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="app-bg">
 
     <!-- Splash Screen -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-6">
-        <div class="relative">
-            <i class="fas fa-fort-awesome text-6xl text-blue-600 sparkle"></i>
+    <div id="loadingOverlay">
+        <div class="space-y-6 flex flex-col items-center">
+            <div class="relative">
+                <i class="fas fa-fort-awesome text-7xl text-white sparkle"></i>
+            </div>
+            <div class="px-6">
+                <h2 class="castle-font text-4xl text-white drop-shadow-xl">Welcome to the Disney Chores Game</h2>
+                <p id="loadingMsg" class="text-xs uppercase tracking-widest text-white/70 font-bold mt-4">Opening the Gates...</p>
+            </div>
+            <div class="loading-spinner"></div>
+            <button id="retryBtn" onclick="location.reload()" class="hidden px-8 py-3 bg-white text-blue-900 rounded-full font-bold shadow-xl mt-4">Retry Entrance</button>
         </div>
-        <div class="text-center">
-            <h2 class="castle-font text-3xl text-blue-800">Main Street</h2>
-            <p class="text-xs uppercase tracking-widest text-gray-400 font-bold">Opening the Gates...</p>
-        </div>
-        <div class="loading-spinner"></div>
-        <button id="retryBtn" onclick="location.reload()" class="hidden px-8 py-3 disney-gradient text-white rounded-full font-bold shadow-xl">Retry Entrance</button>
     </div>
 
-    <div id="app" class="max-w-md mx-auto min-h-screen pb-20 hidden shadow-2xl overflow-hidden">
+    <!-- Main App Content -->
+    <div id="app" class="max-w-md mx-auto hidden shadow-2xl overflow-hidden">
         
         <!-- Header -->
         <header id="appHeader" class="relative p-6 border-b border-blue-50 sticky top-0 z-10 transition-colors duration-500">
@@ -222,7 +259,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 disney-gradient text-white px-8 py-4 rounded-2xl shadow-2xl transition-all duration-500 opacity-0 translate-y-10 z-50 pointer-events-none text-sm font-bold border-2 border-white/20"></div>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 disney-gradient text-white px-8 py-4 rounded-2xl shadow-2xl transition-all duration-500 opacity-0 translate-y-10 z-[110] pointer-events-none text-sm font-bold border-2 border-white/20"></div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbzrtt-QKb11mK6HWj4-vkdUHOh1RHhLl-eDoHGZeCNtxN1EZ5xl8cwlulEAIFRh3plA-g/exec';
@@ -237,7 +274,7 @@
                 fit: false
             },
             'Mia': { 
-                img: 'https://static.wikia.nocookie.net/disneyprincess/images/5/50/Untitled1110_20240808180608.png/revision/latest?cb=20240808172227',
+                img: 'https://i.imgur.com/2MkDKmz.jpeg',
                 primary: '#f472b6',
                 secondary: '#db2777',
                 streakBg: 'bg-pink-50/50',
@@ -261,12 +298,28 @@
                 fit: false
             },
             'Izzy': { 
-                img: 'https://static.wikia.nocookie.net/pixar/images/7/7a/Kevin1.jpg/revision/latest?cb=20160206173747',
+                img: 'https://i.imgur.com/zDzw0ak.jpeg',
                 primary: '#4ade80',
                 secondary: '#16a34a',
                 streakBg: 'bg-green-50/50',
                 streakText: 'text-green-700',
                 fit: true 
+            },
+            'DJ': {
+                img: 'https://i.imgur.com/n6xIT8l.jpeg',
+                primary: '#3b82f6',
+                secondary: '#1d4ed8',
+                streakBg: 'bg-blue-50/50',
+                streakText: 'text-blue-700',
+                fit: false
+            },
+            'Ash': {
+                img: 'https://i.imgur.com/JA8gBIJ.jpeg',
+                primary: '#ef4444',
+                secondary: '#b91c1c',
+                streakBg: 'bg-red-50/50',
+                streakText: 'text-red-700',
+                fit: false
             }
         };
 
@@ -276,8 +329,10 @@
         window.onload = async () => {
             const success = await refreshData();
             if (success) {
-                document.getElementById('loadingOverlay').classList.add('hidden');
+                // Show app and hide overlay with fade
                 document.getElementById('app').classList.remove('hidden');
+                document.getElementById('loadingOverlay').classList.add('hidden-fade');
+                
                 const savedUser = localStorage.getItem('choreHero');
                 if (savedUser) {
                     try {
@@ -290,7 +345,7 @@
                     renderUserSelection();
                 }
             } else {
-                const overlayText = document.getElementById('loadingOverlay').querySelector('p');
+                const overlayText = document.getElementById('loadingMsg');
                 overlayText.innerHTML = `<span class="text-red-500 font-bold italic">COMMUNICATION BREAKDOWN</span>`;
                 document.getElementById('retryBtn').classList.remove('hidden');
                 document.querySelector('.loading-spinner').classList.add('hidden');
@@ -331,9 +386,9 @@
                 const btn = document.createElement('button');
                 btn.className = "card-glass p-4 rounded-3xl flex items-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all text-left group border border-white/40";
                 
-                let iconHtml = user.Role === 'Parent' ? 
-                    `<div class="w-14 h-14 rounded-2xl disney-gradient flex items-center justify-center text-white text-2xl shadow-lg"><i class="fas fa-user-tie"></i></div>` :
-                    `<img src="${char?.img || 'https://via.placeholder.com/150'}" class="w-14 h-14 rounded-2xl shadow-lg border-2 border-white group-hover:rotate-3 transition-transform ${char?.fit ? 'fit-avatar' : 'object-cover'}">`;
+                let iconHtml = (char?.img) ? 
+                    `<img src="${char.img}" class="w-14 h-14 rounded-2xl shadow-lg border-2 border-white group-hover:rotate-3 transition-transform ${char?.fit ? 'fit-avatar' : 'object-cover'}">` :
+                    `<div class="w-14 h-14 rounded-2xl disney-gradient flex items-center justify-center text-white text-2xl shadow-lg"><i class="fas fa-user-tie"></i></div>`;
 
                 btn.innerHTML = `
                     ${iconHtml}
