@@ -153,6 +153,16 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .kid-toggle-btn.active {
+            border-color: var(--theme-primary);
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .kid-toggle-btn.active img {
+            transform: scale(1.1);
+            border-color: var(--theme-primary);
+        }
     </style>
 </head>
 <body class="app-bg">
@@ -255,6 +265,64 @@
 
             <!-- Parents Area -->
             <section id="parentDashboard" class="hidden space-y-8 pb-12">
+                
+                <!-- Hero Spotlight (Kid View Toggle) -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <i class="fas fa-eye text-blue-600"></i> Hero Spotlight
+                    </h3>
+                    <!-- Kid Selection Bubble Row -->
+                    <div id="parentKidSelector" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+
+                    <!-- Spotlight Window (Mirrors Kid View + Tools) -->
+                    <div id="spotlightWindow" class="hidden space-y-6 p-5 rounded-3xl bg-white/30 border border-white/60 backdrop-blur-sm">
+                        <!-- Spotlit Stats -->
+                        <div class="flex gap-2">
+                            <div class="magic-gold flex-1 p-3 rounded-2xl text-blue-900 shadow-sm flex items-center justify-between">
+                                <div>
+                                    <p class="text-[8px] uppercase font-black opacity-60">Magic Points</p>
+                                    <p class="text-lg font-black" id="spotlightGold">0</p>
+                                </div>
+                            </div>
+                            <div class="bg-white/50 flex-1 p-3 rounded-2xl text-blue-700 border border-white/50 flex items-center justify-between">
+                                <div>
+                                    <p class="text-[8px] uppercase font-black opacity-50">Streak</p>
+                                    <p class="text-lg font-black" id="spotlightStreak">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Manual Adjustment Tools (Now inside Spotlight) -->
+                        <div class="card-glass p-4 rounded-2xl border border-blue-200/50 bg-white/40">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest text-blue-700 mb-3 flex items-center gap-2">
+                                <i class="fas fa-magic"></i> Magic Adjustments
+                            </h3>
+                            <div class="space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="number" id="adjPoints" placeholder="Points" class="w-20 p-2 rounded-xl bg-white/60 border border-blue-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
+                                    <input type="text" id="adjReason" placeholder="Reason (e.g. Extra Kind)" class="flex-1 p-2 rounded-xl bg-white/60 border border-blue-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="handleAdjustment(true)" class="flex-1 py-2 bg-green-500 text-white rounded-xl font-black text-[9px] uppercase shadow hover:bg-green-600 active:scale-95 transition-all">Grant</button>
+                                    <button onclick="handleAdjustment(false)" class="flex-1 py-2 bg-red-500 text-white rounded-xl font-black text-[9px] uppercase shadow hover:bg-red-600 active:scale-95 transition-all">Subtract</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spotlit Tasks -->
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">FastPass Tasks</p>
+                                <div id="spotlightAssigned" class="space-y-2"></div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Open Adventures</p>
+                                <div id="spotlightOpen" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Approval Queue -->
                 <div>
                     <div class="flex items-center justify-between mb-4">
@@ -264,26 +332,6 @@
                         <span id="pendingCount" class="bg-blue-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">0</span>
                     </div>
                     <div id="approvalQueue" class="space-y-4"></div>
-                </div>
-
-                <!-- Manual Adjustment Tools -->
-                <div class="card-glass p-5 rounded-3xl border-2 border-dashed border-blue-200">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-blue-700 mb-4 flex items-center gap-2">
-                        <i class="fas fa-magic"></i> Magic Adjustments
-                    </h3>
-                    <div class="space-y-3">
-                        <select id="adjUser" class="w-full p-3 rounded-xl bg-white/60 border border-blue-100 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                            <option value="">Select a Hero...</option>
-                        </select>
-                        <div class="flex gap-2">
-                            <input type="number" id="adjPoints" placeholder="Points" class="w-1/3 p-3 rounded-xl bg-white/60 border border-blue-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                            <input type="text" id="adjReason" placeholder="Reason (e.g. Extra Kind)" class="flex-1 p-3 rounded-xl bg-white/60 border border-blue-100 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                        </div>
-                        <div class="flex gap-2 pt-1">
-                            <button onclick="handleAdjustment(true)" class="flex-1 py-3 bg-green-500 text-white rounded-xl font-black text-[10px] uppercase shadow-lg hover:bg-green-600 active:scale-95 transition-all">Grant Points</button>
-                            <button onclick="handleAdjustment(false)" class="flex-1 py-3 bg-red-500 text-white rounded-xl font-black text-[10px] uppercase shadow-lg hover:bg-red-600 active:scale-95 transition-all">Subtract</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Daily Briefing -->
@@ -317,6 +365,7 @@
 
         let appData = null;
         let currentUser = null;
+        let selectedSpotlightUser = null;
 
         window.onload = async () => {
             const success = await refreshData();
@@ -358,8 +407,18 @@
             const list = document.getElementById('userList');
             list.innerHTML = '';
             if (!appData?.users) return;
+            
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('welcomeText').innerText = "Welcome Home";
+            document.getElementById('userRoleDisplay').innerText = "Park Guest";
+            document.getElementById('currentProfileImg').classList.add('hidden');
+            document.getElementById('statsBar').classList.add('hidden');
+            document.getElementById('kidDashboard').classList.add('hidden');
+            document.getElementById('parentDashboard').classList.add('hidden');
+            
             document.documentElement.style.setProperty('--theme-primary', '#0066cc');
             document.documentElement.style.setProperty('--theme-secondary', '#004499');
+            
             appData.users.forEach(user => {
                 if (!user.Name) return;
                 const char = CHARACTER_MAP[user.Name];
@@ -468,14 +527,39 @@
             else document.getElementById('completedSection').classList.remove('hidden');
         }
 
-        function createChoreCard(name, basePoints, borderColor, status) {
+        function createChoreCard(name, basePoints, borderColor, status, isParentView = false) {
             const card = document.createElement('div');
             const bClass = borderColor === 'border-theme' ? 'border-l-[var(--theme-primary)]' : borderColor;
             card.className = `card-glass p-5 rounded-2xl flex justify-between items-center shadow-sm border-l-8 ${bClass} relative overflow-hidden`;
-            const bonus = (parseInt(currentUser['Current Streak'] || 0)) * 2;
+            
+            let streak = 0;
+            if (isParentView && selectedSpotlightUser) {
+                streak = parseInt(selectedSpotlightUser['Current Streak'] || 0);
+            } else if (!isParentView) {
+                streak = parseInt(currentUser['Current Streak'] || 0);
+            }
+            
+            const bonus = streak * 2;
             const total = basePoints + bonus;
-            let actionHtml = !status ? `<button onclick="submitChore('${name.replace(/'/g, "\\'")}', ${total})" class="disney-gradient text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-lg">COMPLETE</button>` : `<span class="${status === 'Approved' ? 'bg-green-100/60 text-green-800' : 'bg-blue-100/60 text-blue-800'} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-current opacity-80">${status}</span>`;
-            card.innerHTML = `<div class="z-10"><h4 class="font-black text-slate-800 text-lg mb-1">${name}</h4><div class="flex items-center"><span class="text-[9px] bg-amber-100/50 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-tighter border border-amber-200/50">${basePoints} Points</span>${(bonus > 0 && !status) ? `<span class="text-[8px] bg-white/50 text-green-700 px-1.5 py-0.5 rounded ml-2 font-black bonus-badge flex items-center gap-1"><i class="fas fa-fire-alt"></i> +${bonus}</span>` : ''}</div></div><div class="z-10">${actionHtml}</div>`;
+            
+            let actionHtml = '';
+            if (isParentView) {
+                const isDone = (status === 'Approved' || status === 'Pending');
+                actionHtml = isDone ? 
+                    `<div class="flex flex-col items-end">
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                        <span class="text-[8px] font-black uppercase opacity-60 mt-1">${status}</span>
+                    </div>` : 
+                    `<span class="text-[8px] font-black uppercase opacity-40">Ready</span>`;
+            } else {
+                actionHtml = !status ? `<button onclick="submitChore('${name.replace(/'/g, "\\'")}', ${total})" class="disney-gradient text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-lg">COMPLETE</button>` : `<span class="${status === 'Approved' ? 'bg-green-100/60 text-green-800' : 'bg-blue-100/60 text-blue-800'} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-current opacity-80">${status}</span>`;
+            }
+
+            const nameHtml = (isParentView && (status === 'Approved' || status === 'Pending')) 
+                ? `<div class="flex items-center gap-2"><h4 class="font-black text-slate-800 text-sm mb-1">${name}</h4><i class="fas fa-check text-green-500 text-[10px]"></i></div>`
+                : `<h4 class="font-black text-slate-800 ${isParentView ? 'text-sm' : 'text-lg'} mb-1">${name}</h4>`;
+
+            card.innerHTML = `<div class="z-10">${nameHtml}<div class="flex items-center"><span class="text-[9px] bg-amber-100/50 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-tighter border border-amber-200/50">${basePoints} Points</span>${(bonus > 0 && !status) ? `<span class="text-[8px] bg-white/50 text-green-700 px-1.5 py-0.5 rounded ml-2 font-black bonus-badge flex items-center gap-1"><i class="fas fa-fire-alt"></i> +${bonus}</span>` : ''}</div></div><div class="z-10">${actionHtml}</div>`;
             return card;
         }
 
@@ -489,14 +573,77 @@
         }
 
         function renderParentView() {
+            renderParentKidSelector();
             renderApprovalQueue();
             renderBriefing();
-            // Update Adjustment Select
-            const sel = document.getElementById('adjUser');
-            sel.innerHTML = '<option value="">Select a Hero...</option>';
-            appData.users.filter(u => u.Role !== 'Parent').forEach(u => {
-                sel.innerHTML += `<option value="${u.Name}">${u.Name}</option>`;
+            if (selectedSpotlightUser) updateSpotlightView();
+        }
+
+        function renderParentKidSelector() {
+            const container = document.getElementById('parentKidSelector');
+            container.innerHTML = '';
+            const kids = appData.users.filter(u => u.Role !== 'Parent');
+            kids.forEach(kid => {
+                const char = CHARACTER_MAP[kid.Name];
+                const btn = document.createElement('button');
+                const isActive = selectedSpotlightUser && selectedSpotlightUser.Name === kid.Name;
+                btn.className = `kid-toggle-btn flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-2xl border-2 transition-all ${isActive ? 'active' : 'border-transparent opacity-60'}`;
+                btn.innerHTML = `
+                    <img src="${char?.img || ''}" class="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm transition-transform">
+                    <span class="text-[8px] font-black uppercase tracking-widest">${kid.Name}</span>
+                `;
+                btn.onclick = () => {
+                    if (selectedSpotlightUser && selectedSpotlightUser.Name === kid.Name) {
+                        selectedSpotlightUser = null;
+                    } else {
+                        selectedSpotlightUser = kid;
+                    }
+                    updateSpotlightView();
+                    renderParentKidSelector();
+                };
+                container.appendChild(btn);
             });
+        }
+
+        function updateSpotlightView() {
+            const window = document.getElementById('spotlightWindow');
+            if (!selectedSpotlightUser) { window.classList.add('hidden'); return; }
+            window.classList.remove('hidden');
+            
+            document.getElementById('spotlightGold').innerText = selectedSpotlightUser['Total Points'] || 0;
+            document.getElementById('spotlightStreak').innerText = selectedSpotlightUser['Current Streak'] || 0;
+            
+            const qDiv = document.getElementById('spotlightAssigned');
+            const bDiv = document.getElementById('spotlightOpen');
+            qDiv.innerHTML = ''; bDiv.innerHTML = '';
+            
+            if (!appData?.chores) return;
+            
+            const choreKeys = {
+                name: findKey(appData.chores[0], ['Task/Room', 'TaskRoom', 'Task', 'Name']),
+                assigned: findKey(appData.chores[0], ['Assigned To', 'AssignedTo', 'Assigned']),
+                points: findKey(appData.chores[0], ['Base Points', 'BasePoints', 'Points'])
+            };
+            
+            const taskLog = appData.taskLog || [];
+            appData.chores.forEach(chore => {
+                const name = chore[choreKeys.name];
+                const basePoints = parseInt(chore[choreKeys.points] || 0);
+                const assigned = String(chore[choreKeys.assigned] || '').toLowerCase().trim();
+                if (!name) return;
+
+                const todaysEntry = taskLog.find(l => String(l['Task Name'] || '').toLowerCase() === name.toLowerCase() && isToday(l.Timestamp) && l['Worker Name'] === selectedSpotlightUser.Name);
+                const status = todaysEntry ? todaysEntry.Status : null;
+
+                if (assigned === selectedSpotlightUser.Name.toLowerCase()) {
+                    qDiv.appendChild(createChoreCard(name, basePoints, status ? 'border-slate-300' : 'border-theme', status, true));
+                } else if (assigned === 'open') {
+                    bDiv.appendChild(createChoreCard(name, basePoints, status ? 'border-slate-300' : 'border-amber-400', status, true));
+                }
+            });
+
+            if (!qDiv.innerHTML) qDiv.innerHTML = '<p class="text-[8px] text-slate-400 italic">No specific tasks assigned.</p>';
+            if (!bDiv.innerHTML) bDiv.innerHTML = '<p class="text-[8px] text-slate-400 italic">No open adventures available.</p>';
         }
 
         function renderApprovalQueue() {
@@ -538,10 +685,11 @@
         }
 
         async function handleAdjustment(isPositive) {
-            const user = document.getElementById('adjUser').value;
+            if (!selectedSpotlightUser) return;
+            const user = selectedSpotlightUser.Name;
             const points = parseInt(document.getElementById('adjPoints').value);
             const reason = document.getElementById('adjReason').value || "Manual Adjustment";
-            if (!user || !points) { showToast("Who and how much?"); return; }
+            if (!points) { showToast("How many points?"); return; }
             showToast("Waving wand...");
             try {
                 await fetch(API_URL, {
@@ -565,7 +713,13 @@
             } catch (e) { showToast("Connection failed."); }
         }
 
-        function logout() { localStorage.removeItem('choreHero'); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('choreHero'); 
+            currentUser = null;
+            selectedSpotlightUser = null;
+            renderUserSelection();
+        }
+
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.remove('opacity-0', 'translate-y-10'); setTimeout(() => { t.classList.add('opacity-0', 'translate-y-10'); }, 3000); }
     </script>
 </body>
