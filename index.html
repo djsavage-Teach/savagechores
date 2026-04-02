@@ -3,724 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Street Task Tracker</title>
+    <title>Magic Kingdom Chore Quests</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;800&family=Satisfy&display=swap');
-        
         :root {
-            --theme-primary: #0066cc;
-            --theme-secondary: #004499;
-            --theme-accent: #ffcc00;
+            /* Main Street U.S.A. Palette */
+            --ms-brick: #a64444;    /* Brick Red */
+            --ms-sage: #82937f;     /* Sage Green */
+            --ms-blue: #5d7a8c;     /* Dusty Blue */
+            --ms-cream: #f9f6f0;    /* Cream/Parchment */
+            --ms-gold: #c5a059;     /* Muted Gold */
+            --ms-dark: #2d3436;     /* Charcoal for text */
         }
 
-        body { 
-            font-family: 'Lexend', sans-serif; 
-            background: #0f172a; 
-            color: #1a202c; 
-            margin: 0;
-            padding: 0;
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--ms-cream);
+            background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
+            color: var(--ms-dark);
         }
 
-        /* Global Background Constant */
-        .app-bg {
-            background-image: url('https://thumbs.dreamstime.com/b/stunning-cosmic-images-371141643.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+        .header-font { font-family: 'Cinzel', serif; }
+        
+        .card-disney {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-bottom: 4px solid var(--ms-gold);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
-        /* Splash Screen */
-        #loadingOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
+        /* Unified Theme Classes */
+        .ms-bg-sage { background-color: var(--ms-sage) !important; }
+        .ms-text-brick { color: var(--ms-brick) !important; }
+        .ms-text-blue { color: var(--ms-blue) !important; }
+        .ms-border-sage { border-color: var(--ms-sage) !important; }
+        
+        /* Unified Button Style */
+        .btn-magic {
+            background: linear-gradient(135deg, var(--ms-brick) 0%, #8e3a3a 100%) !important;
+            color: white !important;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 4px 0px #6d2d2d;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            color: white;
-            transition: opacity 0.5s ease-out, visibility 0.5s;
-        }
-        
-        #loadingOverlay::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: -1;
         }
 
-        #app {
-            position: relative;
-            min-height: 100vh;
+        .btn-magic:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+            box-shadow: 0 5px 0px #6d2d2d;
         }
 
-        #app::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(14px) saturate(140%);
-            z-index: 0;
+        .btn-magic:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0px #6d2d2d;
         }
 
-        #app > * {
-            position: relative;
-            z-index: 1;
+        .btn-magic:disabled {
+            background: #d1d5db !important;
+            box-shadow: 0 4px 0px #9ca3af;
+            cursor: not-allowed;
+            filter: grayscale(1);
         }
 
-        .disney-gradient { 
-            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%); 
-        }
-
-        .magic-gold { 
-            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%); 
-        }
-
-        .castle-font {
-            font-family: 'Satisfy', cursive;
-        }
-
-        .card-glass { 
-            background: rgba(255, 255, 255, 0.5); 
-            backdrop-filter: blur(4px); 
-            border: 1px solid rgba(255, 255, 255, 0.6); 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-        }
-
-        .fit-avatar {
-            object-fit: contain !important;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        .loading-spinner { 
-            border: 4px solid rgba(255, 255, 255, 0.2); 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            border-left-color: white; 
-            animation: spin 1s linear infinite; 
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .sparkle {
-            animation: sparkle-anim 2s infinite;
-        }
-
-        @keyframes sparkle-anim {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.1); }
-        }
-
-        .bonus-badge {
-            animation: bounce 2s infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-        }
-
-        .profile-pic {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: 1rem;
-            object-fit: cover;
-            border: 2px solid white;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        /* Navigation / Secondary Buttons */
+        .nav-btn-active {
+            border-bottom: 4px solid var(--ms-brick);
+            color: var(--ms-brick);
         }
 
         header {
-            background: rgba(255, 255, 255, 0.35) !important;
-            backdrop-filter: blur(12px);
+            background-color: var(--ms-blue);
+            border-bottom: 5px solid var(--ms-gold);
         }
 
-        .hidden-fade {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(249, 246, 240, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
 
-        /* Small scrollbar for briefing */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .status-pill {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            font-weight: 800;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .kid-toggle-btn.active {
-            border-color: var(--theme-primary);
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .kid-toggle-btn.active img {
-            transform: scale(1.1);
-            border-color: var(--theme-primary);
-        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
     </style>
 </head>
-<body class="app-bg">
+<body class="min-h-screen pb-12">
 
-    <!-- Splash Screen -->
-    <div id="loadingOverlay">
-        <div class="space-y-6 flex flex-col items-center">
-            <div class="relative">
-                <i class="fas fa-fort-awesome text-7xl text-white sparkle"></i>
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxIihWU9JgHC0P8rfN5nDe8wIFajj5kWzQW5-QcuCieRisJ-y10qfhBGUwqJxprhDruew/exec"; 
+    </script>
+
+    <div id="app">
+        <!-- Loading Overlay -->
+        <div v-if="loading" class="loading-overlay">
+            <div class="text-center">
+                <i class="fas fa-cog fa-spin text-5xl mb-4" style="color: var(--ms-blue)"></i>
+                <p class="header-font text-2xl" style="color: var(--ms-brick)">Entering Main Street...</p>
             </div>
-            <div class="px-6">
-                <h2 class="castle-font text-4xl text-white drop-shadow-xl">Welcome to the Disney Chores Game</h2>
-                <p id="loadingMsg" class="text-xs uppercase tracking-widest text-white/70 font-bold mt-4">Opening the Gates...</p>
-            </div>
-            <div class="loading-spinner"></div>
-            <button id="retryBtn" onclick="location.reload()" class="hidden px-8 py-3 bg-white text-blue-900 rounded-full font-bold shadow-xl mt-4">Retry Entrance</button>
         </div>
-    </div>
 
-    <!-- Main App Content -->
-    <div id="app" class="max-w-md mx-auto hidden shadow-2xl overflow-hidden min-h-screen">
-        
-        <!-- Header -->
-        <header id="appHeader" class="relative p-6 border-b border-blue-50 sticky top-0 z-10 transition-colors duration-500">
-            <div class="flex justify-between items-start">
-                <div id="userHeader" class="flex items-center gap-3">
-                    <img id="currentProfileImg" src="" class="hidden profile-pic" alt="Profile">
-                    <div>
-                        <h1 class="castle-font text-3xl text-blue-700" id="welcomeText">Welcome Home</h1>
-                        <p class="text-[10px] uppercase tracking-tighter text-blue-400 font-extrabold" id="userRoleDisplay">Park Guest</p>
-                    </div>
+        <header class="text-white p-4 shadow-xl sticky top-0 z-40">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-3 cursor-pointer" @click="fetchData">
+                    <i class="fas fa-train text-white text-3xl"></i>
+                    <h1 class="header-font text-xl md:text-2xl tracking-widest uppercase">Magic Kingdom</h1>
                 </div>
-                <div class="flex gap-1">
-                    <button onclick="refreshData()" class="text-blue-400 hover:text-blue-600 p-2 transition-all"><i class="fas fa-redo-alt text-sm"></i></button>
-                    <button onclick="logout()" class="text-gray-400 hover:text-red-500 p-2 transition-all"><i class="fas fa-power-off text-sm"></i></button>
-                </div>
-            </div>
-
-            <!-- Magic Stats -->
-            <div id="statsBar" class="mt-4 flex gap-2 hidden">
-                <div class="magic-gold flex-1 p-3 rounded-2xl text-blue-900 shadow-sm flex items-center justify-between overflow-hidden relative">
-                    <i class="fas fa-wand-magic-sparkles absolute -right-2 -bottom-2 opacity-10 text-4xl"></i>
-                    <div>
-                        <p class="text-[9px] uppercase font-black opacity-60">Magic Points</p>
-                        <p class="text-xl font-black" id="statGold">0</p>
+                <div v-if="currentUser" class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-[10px] uppercase font-bold text-gray-200 tracking-widest">Resident</p>
+                        <p class="font-bold leading-none">{{ currentUser.name }}</p>
                     </div>
-                    <i class="fas fa-certificate text-xl opacity-40"></i>
-                </div>
-                <div id="streakBox" class="bg-white/40 backdrop-blur-md flex-1 p-3 rounded-2xl text-blue-700 border border-white/50 flex items-center justify-between transition-colors duration-500">
-                    <div>
-                        <p class="text-[9px] uppercase font-black opacity-50">Daily Streak</p>
-                        <p class="text-xl font-black flex items-center gap-1">
-                            <span id="statStreak">0</span>
-                            <i class="fas fa-star text-yellow-400 text-xs sparkle"></i>
-                        </p>
-                    </div>
-                    <i class="fas fa-calendar-star text-xl opacity-20"></i>
+                    <button @click="logout" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
         </header>
 
-        <main class="p-6">
-            <!-- Park Entrance / Login -->
-            <section id="loginView" class="space-y-8 py-4">
-                <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/40 backdrop-blur mb-4 border-4 border-white/60 shadow-xl">
-                        <i class="fas fa-ticket-alt text-4xl text-blue-600 -rotate-12"></i>
-                    </div>
-                    <h2 class="text-2xl font-black text-slate-800">Who is visiting today?</h2>
-                    <p class="text-sm text-slate-500 mt-1">Select your pass to enter the park</p>
-                </div>
-                <div id="userList" class="grid grid-cols-1 gap-4"></div>
-            </section>
-
-            <!-- Kids Area -->
-            <section id="kidDashboard" class="hidden space-y-8">
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                            <i id="secIcon1" class="fas fa-map-marked-alt text-blue-600"></i> My FastPass Tasks
-                        </h3>
-                    </div>
-                    <div id="assignedQuests" class="space-y-3"></div>
-                </div>
-
-                <div>
-                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                        <i id="secIcon2" class="fas fa-globe-americas text-blue-600"></i> Open Adventures
-                    </h3>
-                    <div id="openBounties" class="space-y-3"></div>
-                </div>
-
-                <div id="completedSection" class="pt-6 border-t border-white/30">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-                        <i class="fas fa-camera-retro"></i> Memories from Today
-                    </h3>
-                    <div id="completedToday" class="space-y-3 opacity-60"></div>
-                </div>
-            </section>
-
-            <!-- Parents Area -->
-            <section id="parentDashboard" class="hidden space-y-8 pb-12">
+        <main class="max-w-6xl mx-auto p-4 mt-6">
+            <!-- LOGIN SCREEN -->
+            <div v-if="!currentUser" class="text-center py-12">
+                <h2 class="header-font text-4xl mb-2 uppercase tracking-tighter" style="color: var(--ms-brick)">Who Approaches?</h2>
+                <p class="text-gray-500 italic mb-12">Welcome to the Exposition Park</p>
                 
-                <!-- Hero Spotlight (Kid View Toggle) -->
-                <div class="space-y-4">
-                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                        <i class="fas fa-eye text-blue-600"></i> Hero Spotlight
-                    </h3>
-                    <!-- Kid Selection Bubble Row -->
-                    <div id="parentKidSelector" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div v-for="user in users" :key="user.name" @click="selectUser(user)"
+                         class="card-disney p-8 cursor-pointer transform hover:-translate-y-2 transition duration-300 group">
+                        <div class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl transition ms-bg-sage text-white">
+                            <i :class="getAvatarIcon(user)"></i>
+                        </div>
+                        <h3 class="header-font text-xl" style="color: var(--ms-dark)">{{ user.name }}</h3>
+                        <p class="text-[10px] font-bold uppercase text-gray-400 mt-1 tracking-widest">{{ user.role }}</p>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Spotlight Window (Mirrors Kid View + Tools) -->
-                    <div id="spotlightWindow" class="hidden space-y-6 p-5 rounded-3xl bg-white/30 border border-white/60 backdrop-blur-sm">
-                        <!-- Spotlit Stats -->
-                        <div class="flex gap-2">
-                            <div class="magic-gold flex-1 p-3 rounded-2xl text-blue-900 shadow-sm flex items-center justify-between">
+            <div v-else>
+                <!-- CHILD VIEW -->
+                <div v-if="!isParent(currentUser)" class="space-y-8">
+                    <div class="flex space-x-8 border-b border-gray-300">
+                        <button @click="childView = 'quests'" :class="childView === 'quests' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-xs transition-all">Main Attractions</button>
+                        <button @click="childView = 'bazaar'" :class="childView === 'bazaar' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-xs transition-all">Gift Shop</button>
+                    </div>
+
+                    <div v-if="childView === 'quests'" class="space-y-8">
+                        <!-- Stat Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="card-disney p-6 flex items-center space-x-4">
+                                <div class="p-4 rounded-lg ms-bg-sage text-white"><i class="fas fa-coins text-2xl"></i></div>
                                 <div>
-                                    <p class="text-[8px] uppercase font-black opacity-60">Magic Points</p>
-                                    <p class="text-lg font-black" id="spotlightGold">0</p>
+                                    <p class="text-xs font-bold text-gray-400 uppercase">Treasure</p>
+                                    <p class="text-3xl font-black" style="color: var(--ms-brick)">{{ currentUser.points || 0 }} <span class="text-xs">pts</span></p>
                                 </div>
                             </div>
-                            <div class="bg-white/50 flex-1 p-3 rounded-2xl text-blue-700 border border-white/50 flex items-center justify-between">
+                            <div class="card-disney p-6 flex items-center space-x-4">
+                                <div class="p-4 rounded-lg" style="background: var(--ms-blue); color: white;"><i class="fas fa-award text-2xl"></i></div>
                                 <div>
-                                    <p class="text-[8px] uppercase font-black opacity-50">Streak</p>
-                                    <p class="text-lg font-black" id="spotlightStreak">0</p>
+                                    <p class="text-xs font-bold text-gray-400 uppercase">Level</p>
+                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.level || 1 }}</p>
+                                </div>
+                            </div>
+                            <div class="card-disney p-6 flex items-center space-x-4">
+                                <div class="p-4 rounded-lg" style="background: var(--ms-gold); color: white;"><i class="fas fa-calendar-check text-2xl"></i></div>
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase">Streak</p>
+                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.streak || 0 }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Manual Adjustment Tools (Now inside Spotlight) -->
-                        <div class="card-glass p-4 rounded-2xl border border-blue-200/50 bg-white/40">
-                            <h3 class="text-[10px] font-black uppercase tracking-widest text-blue-700 mb-3 flex items-center gap-2">
-                                <i class="fas fa-magic"></i> Magic Adjustments
-                            </h3>
-                            <div class="space-y-2">
-                                <div class="flex gap-2">
-                                    <input type="number" id="adjPoints" placeholder="Points" class="w-20 p-2 rounded-xl bg-white/60 border border-blue-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
-                                    <input type="text" id="adjReason" placeholder="Reason (e.g. Extra Kind)" class="flex-1 p-2 rounded-xl bg-white/60 border border-blue-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all">
+                        <!-- CHORE SECTIONS -->
+                        <section>
+                            <h2 class="header-font text-2xl mb-6 flex items-center" style="color: var(--ms-brick)">
+                                <i class="fas fa-map-marked-alt mr-3"></i> Main Attractions
+                            </h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div v-for="chore in assignedChores" :key="chore.name" 
+                                     class="card-disney p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 ms-border-sage">
+                                    <div class="text-center sm:text-left">
+                                        <h4 class="font-bold text-lg uppercase tracking-tight" style="color: var(--ms-dark)">{{ chore.name }}</h4>
+                                        <div class="flex items-center justify-center sm:justify-start space-x-2 mt-1">
+                                            <span class="text-[10px] px-2 py-0.5 rounded font-black tracking-widest ms-bg-sage text-white">+{{ chore.basePoints || 0 }} PTS</span>
+                                            <span v-if="getChoreStatus(chore)" :class="statusBadgeClass(getChoreStatus(chore))" class="status-pill">
+                                                {{ getChoreStatus(chore) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button @click="completeChore(chore)" 
+                                            :disabled="getChoreLock(chore).isLocked"
+                                            class="btn-magic px-10 py-3 rounded text-sm min-w-[140px]">
+                                        {{ getChoreButtonLabel(chore) }}
+                                    </button>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button onclick="handleAdjustment(true)" class="flex-1 py-2 bg-green-500 text-white rounded-xl font-black text-[9px] uppercase shadow hover:bg-green-600 active:scale-95 transition-all">Grant</button>
-                                    <button onclick="handleAdjustment(false)" class="flex-1 py-2 bg-red-500 text-white rounded-xl font-black text-[9px] uppercase shadow hover:bg-red-600 active:scale-95 transition-all">Subtract</button>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="header-font text-2xl mb-6 flex items-center" style="color: var(--ms-blue)">
+                                <i class="fas fa-ticket-alt mr-3"></i> C-Ticket Items
+                            </h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div v-for="chore in availableOpenChores" :key="chore.name" 
+                                     class="card-disney p-5 flex flex-col justify-between h-full">
+                                    <h4 class="font-bold uppercase text-sm mb-4" style="color: var(--ms-dark)">{{ chore.name }}</h4>
+                                    <div class="flex flex-col space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-black text-sm" style="color: var(--ms-blue)">{{ chore.basePoints || 0 }} PTS</span>
+                                            <span v-if="getChoreStatus(chore, true)" :class="statusBadgeClass(getChoreStatus(chore, true))" class="status-pill">
+                                                {{ getChoreStatus(chore, true) }}
+                                            </span>
+                                        </div>
+                                        <button @click="completeChore(chore)" 
+                                                :disabled="getChoreLock(chore, true).isLocked"
+                                                class="btn-magic w-full py-2 rounded text-xs">
+                                            {{ getChoreButtonLabel(chore, true) }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- GIFT SHOP VIEW -->
+                    <div v-if="childView === 'bazaar'" class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="item in storeItems" :key="item.name" class="card-disney flex flex-col justify-between hover:shadow-xl transition">
+                                <div class="h-40 bg-gray-100 flex items-center justify-center">
+                                    <img v-if="item.image" :src="item.image" class="w-full h-full object-cover">
+                                    <i v-else class="fas fa-gift text-4xl text-gray-300"></i>
+                                </div>
+                                <div class="p-5">
+                                    <h4 class="header-font text-lg uppercase" style="color: var(--ms-dark)">{{ item.name }}</h4>
+                                    <div class="mt-4 flex items-center justify-between">
+                                        <span class="font-black text-xl" style="color: var(--ms-brick)">{{ item.cost }} <i class="fas fa-coins text-yellow-600"></i></span>
+                                        <button @click="buyItem(item)" 
+                                                :disabled="currentUser.points < item.cost"
+                                                class="btn-magic px-6 py-2 rounded text-xs">
+                                            Buy
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Spotlit Tasks -->
-                        <div class="space-y-4">
+                <!-- PARENT VIEW -->
+                <div v-else class="space-y-8">
+                    <!-- Parent Nav -->
+                    <div class="flex flex-wrap gap-4 border-b border-gray-300">
+                        <button v-for="kid in kids" @click="parentViewKid = kid.name"
+                                :class="parentViewKid === kid.name ? 'nav-btn-active font-black' : 'text-gray-400 font-bold'"
+                                class="px-4 py-3 transition text-xs uppercase tracking-widest">{{ kid.name }}</button>
+                        <button @click="parentViewKid = 'Approvals'"
+                                :class="parentViewKid === 'Approvals' ? 'nav-btn-active font-black' : 'text-gray-400 font-bold'"
+                                class="px-4 py-3 transition text-xs uppercase tracking-widest relative">
+                            Approvals <span v-if="pendingTasks.length > 0" class="ml-2 bg-red-600 text-white text-[10px] px-1.5 rounded-full">{{ pendingTasks.length }}</span>
+                        </button>
+                    </div>
+
+                    <!-- Approvals Queue -->
+                    <div v-if="parentViewKid === 'Approvals'" class="space-y-4">
+                        <h3 class="header-font text-xl uppercase" style="color: var(--ms-brick)">Awaiting Royal Approval</h3>
+                        <div v-if="pendingTasks.length === 0" class="p-12 text-center text-gray-400 italic">Everything is in order, Mayor.</div>
+                        <div v-for="task in pendingTasks" :key="task.timestamp" class="card-disney p-5 flex justify-between items-center bg-white border-l-8 ms-border-sage">
                             <div>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">FastPass Tasks</p>
-                                <div id="spotlightAssigned" class="space-y-2"></div>
+                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white" style="background: var(--ms-blue)">{{ task.username }}</span>
+                                <h4 class="font-bold text-xl mt-1 uppercase" style="color: var(--ms-dark)">{{ task.job }}</h4>
+                                <p class="text-xs text-gray-500 italic">{{ task.points }} points</p>
                             </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Open Adventures</p>
-                                <div id="spotlightOpen" class="space-y-2"></div>
+                            <div class="flex space-x-2">
+                                <button @click="approveTask(task)" class="bg-green-700 text-white px-6 py-2 rounded font-bold uppercase text-xs">Approve</button>
+                                <button @click="rejectTask(task)" class="bg-gray-100 text-gray-600 px-4 py-2 rounded font-bold uppercase text-xs">Deny</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CHILD DASHBOARD -->
+                    <div v-else class="space-y-6">
+                        <!-- Profile Header -->
+                        <div class="card-disney p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div class="text-center md:text-left">
+                                <h2 class="header-font text-4xl uppercase" style="color: var(--ms-brick)">{{ parentViewKid }}</h2>
+                                <p class="text-2xl font-black mt-2 uppercase" style="color: var(--ms-blue)">{{ getKidStats(parentViewKid).points || 0 }} Treasure Points</p>
+                            </div>
+                            <div class="flex items-center space-x-8">
+                                <div class="text-center">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Level</p>
+                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ getKidStats(parentViewKid).level || 1 }}</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Streak</p>
+                                    <p class="text-3xl font-black" style="color: var(--ms-gold)">{{ getKidStats(parentViewKid).streak || 0 }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dashboard Stats Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- TODAY CARD -->
+                            <div class="card-disney">
+                                <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-brick)">Today's Progress</h3>
+                                </div>
+                                <div class="p-4 h-[240px] overflow-y-auto">
+                                    <div v-if="getTodayLog(parentViewKid).length === 0" class="h-full flex items-center justify-center text-gray-400 italic text-sm">
+                                        No entries yet today.
+                                    </div>
+                                    <div v-else class="space-y-3">
+                                        <div v-for="log in getTodayLog(parentViewKid)" :key="log.timestamp" class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
+                                            <div>
+                                                <p class="font-bold uppercase text-[10px] leading-tight">{{ log.job }}</p>
+                                                <p class="text-[9px] text-gray-400">{{ formatDate(log.timestamp, true) }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black">+{{ log.points }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5 DAY HISTORY CARD -->
+                            <div class="card-disney">
+                                <div class="p-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-blue)">5-Day Summary</h3>
+                                </div>
+                                <div class="p-4 h-[240px]">
+                                    <div class="space-y-3">
+                                        <div v-for="day in getFiveDaySummary(parentViewKid)" :key="day.date" class="flex justify-between items-center">
+                                            <span class="text-xs font-bold uppercase text-gray-500">{{ day.label }}</span>
+                                            <div class="flex-1 mx-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                <div class="h-full ms-bg-sage" :style="{ width: Math.min(100, (day.total / 10) * 100) + '%' }"></div>
+                                            </div>
+                                            <span class="text-xs font-black" style="color: var(--ms-dark)">{{ day.total }} pts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Manual Adjust -->
+                        <div class="card-disney p-6">
+                            <h3 class="header-font text-lg mb-4 uppercase" style="color: var(--ms-blue)">Royal Decree (Manual Adjust)</h3>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <input type="number" v-model="manualAdjust.amount" placeholder="Points" class="flex-1 p-3 rounded border border-gray-300 outline-none focus:border-blue-400">
+                                <input type="text" v-model="manualAdjust.reason" placeholder="Reason for adjustment" class="flex-[2] p-3 rounded border border-gray-300 outline-none focus:border-blue-400">
+                                <button @click="submitManualAdjust" class="btn-magic px-8 py-3 rounded">Execute</button>
+                            </div>
+                        </div>
+
+                        <!-- Activity History (Full) -->
+                        <div class="card-disney">
+                            <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-dark)">Full Activity History</h3>
+                            </div>
+                            <div class="max-h-[300px] overflow-y-auto text-sm">
+                                <div v-for="log in getKidLogs(parentViewKid)" :key="log.timestamp" class="p-4 border-b border-gray-50 flex justify-between items-center hover:bg-gray-50 transition">
+                                    <div>
+                                        <p class="font-bold text-[11px] uppercase tracking-tight">{{ log.job }}</p>
+                                        <p class="text-[10px] text-gray-400">{{ formatDate(log.timestamp) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black">
+                                            {{ log.points >= 0 ? '+' : '' }}{{ log.points }}
+                                        </p>
+                                        <span :class="statusBadgeClass(log.status)" class="status-pill">{{ log.status }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="getKidLogs(parentViewKid).length === 0" class="p-12 text-center text-gray-300 italic">No history found.</div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Approval Queue -->
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                            <i class="fas fa-hourglass-half text-blue-600"></i> Pending Review
-                        </h3>
-                        <span id="pendingCount" class="bg-blue-600 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">0</span>
-                    </div>
-                    <div id="approvalQueue" class="space-y-4"></div>
-                </div>
-
-                <!-- Daily Briefing -->
-                <div>
-                    <h3 class="text-sm font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                        <i class="fas fa-scroll text-blue-600"></i> Daily Briefing
-                    </h3>
-                    <div id="dailyBriefing" class="space-y-2 max-h-80 overflow-y-auto no-scrollbar pr-1">
-                        <!-- Briefing items loaded here -->
-                    </div>
-                </div>
-            </section>
+            </div>
         </main>
+
+        <!-- Toast -->
+        <div v-if="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white text-gray-800 px-8 py-4 rounded shadow-2xl z-50 border-t-4 ms-border-sage animate-pulse">
+            <span class="header-font uppercase tracking-widest text-sm" style="color: var(--ms-brick)">{{ toast }}</span>
+        </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 disney-gradient text-white px-8 py-4 rounded-2xl shadow-2xl transition-all duration-500 opacity-0 translate-y-10 z-[110] pointer-events-none text-sm font-bold border-2 border-white/20"></div>
-
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzrtt-QKb11mK6HWj4-vkdUHOh1RHhLl-eDoHGZeCNtxN1EZ5xl8cwlulEAIFRh3plA-g/exec';
-        
-        const CHARACTER_MAP = {
-            'Alexsi': { img: 'https://ih1.redbubble.net/image.782015188.8123/st,small,507x507-pad,600x600,f8f8f8.jpg', primary: '#22d3ee', secondary: '#0891b2', streakText: 'text-cyan-700', fit: false },
-            'Mia': { img: 'https://i.imgur.com/2MkDKmz.jpeg', primary: '#f472b6', secondary: '#db2777', streakText: 'text-pink-700', fit: true },
-            'Pyper': { img: 'https://upload.wikimedia.org/wikipedia/en/5/56/Moana_%28character%29.png', primary: '#fb923c', secondary: '#ea580c', streakText: 'text-orange-700', fit: true },
-            'Emmy': { img: 'https://m.media-amazon.com/images/I/815mnElwFdL._AC_UF894,1000_QL80_.jpg', primary: '#a78bfa', secondary: '#7c3aed', streakText: 'text-purple-700', fit: false },
-            'Izzy': { img: 'https://i.imgur.com/zDzw0ak.jpeg', primary: '#4ade80', secondary: '#16a34a', streakText: 'text-green-700', fit: true },
-            'DJ': { img: 'https://i.imgur.com/n6xIT8l.jpeg', primary: '#3b82f6', secondary: '#1d4ed8', streakText: 'text-blue-700', fit: false },
-            'Ash': { img: 'https://i.imgur.com/JA8gBIJ.jpeg', primary: '#ef4444', secondary: '#b91c1c', streakText: 'text-red-700', fit: false }
-        };
+        const { createApp, ref, computed, onMounted } = Vue;
+        createApp({
+            setup() {
+                const loading = ref(true);
+                const currentUser = ref(null);
+                const users = ref([]);
+                const chores = ref([]);
+                const storeItems = ref([]);
+                const taskLog = ref([]);
+                const toast = ref("");
+                const parentViewKid = ref("");
+                const childView = ref("quests");
+                const manualAdjust = ref({ amount: null, reason: "" });
 
-        let appData = null;
-        let currentUser = null;
-        let selectedSpotlightUser = null;
-
-        window.onload = async () => {
-            const success = await refreshData();
-            if (success) {
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('loadingOverlay').classList.add('hidden-fade');
-                const savedUser = localStorage.getItem('choreHero');
-                if (savedUser) {
-                    try { selectUser(JSON.parse(savedUser).Name); } catch(e) { renderUserSelection(); }
-                } else { renderUserSelection(); }
-            } else {
-                document.getElementById('loadingMsg').innerHTML = `<span class="text-red-500 font-bold italic">COMMUNICATION BREAKDOWN</span>`;
-                document.getElementById('retryBtn').classList.remove('hidden');
-                document.querySelector('.loading-spinner').classList.add('hidden');
-            }
-        };
-
-        async function refreshData() {
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Network response not ok');
-                appData = await response.json();
-                if (currentUser) {
-                    const updatedUser = appData.users.find(u => u.Name === currentUser.Name);
-                    if (updatedUser) {
-                        currentUser = updatedUser;
-                        updateProfileUI();
-                        currentUser.Role === 'Parent' ? renderParentView() : renderChoreBoard();
-                    }
-                }
-                return true;
-            } catch (e) {
-                console.error("Refresh Error:", e);
-                return false;
-            }
-        }
-
-        function renderUserSelection() {
-            const list = document.getElementById('userList');
-            list.innerHTML = '';
-            if (!appData?.users) return;
-            
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('welcomeText').innerText = "Welcome Home";
-            document.getElementById('userRoleDisplay').innerText = "Park Guest";
-            document.getElementById('currentProfileImg').classList.add('hidden');
-            document.getElementById('statsBar').classList.add('hidden');
-            document.getElementById('kidDashboard').classList.add('hidden');
-            document.getElementById('parentDashboard').classList.add('hidden');
-            
-            document.documentElement.style.setProperty('--theme-primary', '#0066cc');
-            document.documentElement.style.setProperty('--theme-secondary', '#004499');
-            
-            appData.users.forEach(user => {
-                if (!user.Name) return;
-                const char = CHARACTER_MAP[user.Name];
-                const btn = document.createElement('button');
-                btn.className = "card-glass p-4 rounded-3xl flex items-center gap-4 hover:scale-[1.02] active:scale-[0.98] transition-all text-left group border border-white/40";
-                let iconHtml = (char?.img) ? `<img src="${char.img}" class="w-14 h-14 rounded-2xl shadow-lg border-2 border-white group-hover:rotate-3 transition-transform ${char?.fit ? 'fit-avatar' : 'object-cover'}">` : `<div class="w-14 h-14 rounded-2xl disney-gradient flex items-center justify-center text-white text-2xl shadow-lg"><i class="fas fa-user-tie"></i></div>`;
-                btn.innerHTML = `${iconHtml}<div><p class="font-black text-xl text-slate-800">${user.Name}</p><p class="text-[10px] text-blue-500 font-black uppercase tracking-widest">${user.Role === 'Parent' ? 'Cast Member' : 'Park Guest'}</p></div><i class="fas fa-chevron-right ml-auto text-slate-400 group-hover:text-blue-500 transition-colors"></i>`;
-                btn.onclick = () => selectUser(user.Name);
-                list.appendChild(btn);
-            });
-        }
-
-        function selectUser(userName) {
-            currentUser = appData.users.find(u => u.Name === userName);
-            if (!currentUser) { renderUserSelection(); return; }
-            localStorage.setItem('choreHero', JSON.stringify(currentUser));
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('welcomeText').innerText = `Welcome, ${currentUser.Name}!`;
-            document.getElementById('userRoleDisplay').innerText = currentUser.Role === 'Parent' ? 'Main Street Cast Member' : 'Magic Kingdom Guest';
-            
-            const char = CHARACTER_MAP[userName];
-            if (char) {
-                document.documentElement.style.setProperty('--theme-primary', char.primary);
-                document.documentElement.style.setProperty('--theme-secondary', char.secondary);
-                const profImg = document.getElementById('currentProfileImg');
-                profImg.src = char.img;
-                profImg.classList.remove('hidden');
-                profImg.style.borderColor = char.primary;
-                if (char.fit) profImg.classList.add('fit-avatar'); else profImg.classList.remove('fit-avatar');
-                const streakBox = document.getElementById('streakBox');
-                streakBox.className = `flex-1 p-3 rounded-2xl border flex items-center justify-between bg-white/40 backdrop-blur-md ${char.streakText} border-${char.primary}20`;
-            }
-            
-            if (currentUser.Role === 'Parent') {
-                document.getElementById('statsBar').classList.add('hidden');
-                document.getElementById('parentDashboard').classList.remove('hidden');
-                document.getElementById('kidDashboard').classList.add('hidden');
-                renderParentView();
-            } else {
-                document.getElementById('statsBar').classList.remove('hidden');
-                document.getElementById('kidDashboard').classList.remove('hidden');
-                document.getElementById('parentDashboard').classList.add('hidden');
-                updateProfileUI();
-                renderChoreBoard();
-            }
-        }
-
-        function updateProfileUI() {
-            document.getElementById('statGold').innerText = currentUser['Total Points'] || 0;
-            document.getElementById('statStreak').innerText = currentUser['Current Streak'] || 0;
-        }
-
-        function findKey(obj, possibleKeys) {
-            if (!obj) return null;
-            const actualKeys = Object.keys(obj);
-            for (let pk of possibleKeys) {
-                const found = actualKeys.find(ak => ak.toLowerCase().replace(/[^a-z]/g, '') === pk.toLowerCase().replace(/[^a-z]/g, ''));
-                if (found) return found;
-            }
-            return null;
-        }
-
-        function isToday(dateStr) {
-            if (!dateStr) return false;
-            const today = new Date();
-            const d = new Date(dateStr);
-            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-        }
-
-        function renderChoreBoard() {
-            const qDiv = document.getElementById('assignedQuests');
-            const bDiv = document.getElementById('openBounties');
-            const cDiv = document.getElementById('completedToday');
-            qDiv.innerHTML = ''; bDiv.innerHTML = ''; cDiv.innerHTML = '';
-            if (!appData?.chores) return;
-
-            const choreKeys = {
-                name: findKey(appData.chores[0], ['Task/Room', 'TaskRoom', 'Task', 'Name']),
-                assigned: findKey(appData.chores[0], ['Assigned To', 'AssignedTo', 'Assigned']),
-                points: findKey(appData.chores[0], ['Base Points', 'BasePoints', 'Points'])
-            };
-
-            const taskLog = appData.taskLog || [];
-            appData.chores.forEach(chore => {
-                const name = chore[choreKeys.name];
-                const basePoints = parseInt(chore[choreKeys.points] || 0);
-                const assigned = String(chore[choreKeys.assigned] || '').toLowerCase().trim();
-                if (!name) return;
-
-                const logEntries = taskLog.filter(l => String(l['Task Name'] || '').toLowerCase() === name.toLowerCase());
-                const todaysEntry = logEntries.find(l => isToday(l.Timestamp));
-                const status = todaysEntry ? todaysEntry.Status : null;
-
-                if (assigned === currentUser.Name.toLowerCase()) {
-                    if (status && status !== 'Denied') cDiv.appendChild(createChoreCard(name, basePoints, 'border-slate-300', status));
-                    else qDiv.appendChild(createChoreCard(name, basePoints, 'border-theme', null));
-                } else if (assigned === 'open') {
-                    if (todaysEntry && (todaysEntry.Status === 'Pending' || todaysEntry.Status === 'Approved')) {
-                        cDiv.appendChild(createChoreCard(name, basePoints, 'border-slate-300', todaysEntry.Status));
-                    } else {
-                        bDiv.appendChild(createChoreCard(name, basePoints, 'border-amber-400', null));
-                    }
-                }
-            });
-            if (cDiv.innerHTML === '') document.getElementById('completedSection').classList.add('hidden');
-            else document.getElementById('completedSection').classList.remove('hidden');
-        }
-
-        function createChoreCard(name, basePoints, borderColor, status, isParentView = false) {
-            const card = document.createElement('div');
-            const bClass = borderColor === 'border-theme' ? 'border-l-[var(--theme-primary)]' : borderColor;
-            card.className = `card-glass p-5 rounded-2xl flex justify-between items-center shadow-sm border-l-8 ${bClass} relative overflow-hidden`;
-            
-            let streak = 0;
-            if (isParentView && selectedSpotlightUser) {
-                streak = parseInt(selectedSpotlightUser['Current Streak'] || 0);
-            } else if (!isParentView) {
-                streak = parseInt(currentUser['Current Streak'] || 0);
-            }
-            
-            const bonus = streak * 2;
-            const total = basePoints + bonus;
-            
-            let actionHtml = '';
-            if (isParentView) {
-                const isDone = (status === 'Approved' || status === 'Pending');
-                actionHtml = isDone ? 
-                    `<div class="flex flex-col items-end">
-                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
-                        <span class="text-[8px] font-black uppercase opacity-60 mt-1">${status}</span>
-                    </div>` : 
-                    `<span class="text-[8px] font-black uppercase opacity-40">Ready</span>`;
-            } else {
-                actionHtml = !status ? `<button onclick="submitChore('${name.replace(/'/g, "\\'")}', ${total})" class="disney-gradient text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-lg">COMPLETE</button>` : `<span class="${status === 'Approved' ? 'bg-green-100/60 text-green-800' : 'bg-blue-100/60 text-blue-800'} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border border-current opacity-80">${status}</span>`;
-            }
-
-            const nameHtml = (isParentView && (status === 'Approved' || status === 'Pending')) 
-                ? `<div class="flex items-center gap-2"><h4 class="font-black text-slate-800 text-sm mb-1">${name}</h4><i class="fas fa-check text-green-500 text-[10px]"></i></div>`
-                : `<h4 class="font-black text-slate-800 ${isParentView ? 'text-sm' : 'text-lg'} mb-1">${name}</h4>`;
-
-            card.innerHTML = `<div class="z-10">${nameHtml}<div class="flex items-center"><span class="text-[9px] bg-amber-100/50 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-tighter border border-amber-200/50">${basePoints} Points</span>${(bonus > 0 && !status) ? `<span class="text-[8px] bg-white/50 text-green-700 px-1.5 py-0.5 rounded ml-2 font-black bonus-badge flex items-center gap-1"><i class="fas fa-fire-alt"></i> +${bonus}</span>` : ''}</div></div><div class="z-10">${actionHtml}</div>`;
-            return card;
-        }
-
-        async function submitChore(name, points) {
-            showToast(`Saving memory... ✨`);
-            try {
-                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "submitChore", worker: currentUser.Name, choreName: name, points: points }) });
-                showToast("Adventure logged!");
-                setTimeout(refreshData, 1500);
-            } catch (e) { showToast("Signal lost!"); }
-        }
-
-        function renderParentView() {
-            renderParentKidSelector();
-            renderApprovalQueue();
-            renderBriefing();
-            if (selectedSpotlightUser) updateSpotlightView();
-        }
-
-        function renderParentKidSelector() {
-            const container = document.getElementById('parentKidSelector');
-            container.innerHTML = '';
-            const kids = appData.users.filter(u => u.Role !== 'Parent');
-            kids.forEach(kid => {
-                const char = CHARACTER_MAP[kid.Name];
-                const btn = document.createElement('button');
-                const isActive = selectedSpotlightUser && selectedSpotlightUser.Name === kid.Name;
-                btn.className = `kid-toggle-btn flex-shrink-0 flex flex-col items-center gap-1 p-2 rounded-2xl border-2 transition-all ${isActive ? 'active' : 'border-transparent opacity-60'}`;
-                btn.innerHTML = `
-                    <img src="${char?.img || ''}" class="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm transition-transform">
-                    <span class="text-[8px] font-black uppercase tracking-widest">${kid.Name}</span>
-                `;
-                btn.onclick = () => {
-                    if (selectedSpotlightUser && selectedSpotlightUser.Name === kid.Name) {
-                        selectedSpotlightUser = null;
-                    } else {
-                        selectedSpotlightUser = kid;
-                    }
-                    updateSpotlightView();
-                    renderParentKidSelector();
+                const getAvatarIcon = (user) => {
+                    if (isParent(user)) return 'fas fa-landmark';
+                    const name = (user.name || '').toLowerCase();
+                    if (name.includes('dj')) return 'fas fa-walking';
+                    if (name.includes('alexsi')) return 'fas fa-camera-retro';
+                    if (name.includes('mia')) return 'fas fa-music';
+                    if (name.includes('pyper')) return 'fas fa-bicycle';
+                    if (name.includes('emmy')) return 'fas fa-palette';
+                    if (name.includes('izzy')) return 'fas fa-book';
+                    if (name.includes('ash')) return 'fas fa-compass';
+                    return 'fas fa-user-tie';
                 };
-                container.appendChild(btn);
-            });
-        }
 
-        function updateSpotlightView() {
-            const window = document.getElementById('spotlightWindow');
-            if (!selectedSpotlightUser) { window.classList.add('hidden'); return; }
-            window.classList.remove('hidden');
-            
-            document.getElementById('spotlightGold').innerText = selectedSpotlightUser['Total Points'] || 0;
-            document.getElementById('spotlightStreak').innerText = selectedSpotlightUser['Current Streak'] || 0;
-            
-            const qDiv = document.getElementById('spotlightAssigned');
-            const bDiv = document.getElementById('spotlightOpen');
-            qDiv.innerHTML = ''; bDiv.innerHTML = '';
-            
-            if (!appData?.chores) return;
-            
-            const choreKeys = {
-                name: findKey(appData.chores[0], ['Task/Room', 'TaskRoom', 'Task', 'Name']),
-                assigned: findKey(appData.chores[0], ['Assigned To', 'AssignedTo', 'Assigned']),
-                points: findKey(appData.chores[0], ['Base Points', 'BasePoints', 'Points'])
-            };
-            
-            const taskLog = appData.taskLog || [];
-            appData.chores.forEach(chore => {
-                const name = chore[choreKeys.name];
-                const basePoints = parseInt(chore[choreKeys.points] || 0);
-                const assigned = String(chore[choreKeys.assigned] || '').toLowerCase().trim();
-                if (!name) return;
+                const fetchData = async () => {
+                    loading.value = true;
+                    try {
+                        const res = await fetch(API_URL + "?action=getData");
+                        const data = await res.json();
+                        users.value = data.users || [];
+                        chores.value = data.chores || [];
+                        taskLog.value = (data.taskLog || []).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        storeItems.value = data.storeItems || [];
 
-                const todaysEntry = taskLog.find(l => String(l['Task Name'] || '').toLowerCase() === name.toLowerCase() && isToday(l.Timestamp) && l['Worker Name'] === selectedSpotlightUser.Name);
-                const status = todaysEntry ? todaysEntry.Status : null;
+                        if (currentUser.value) {
+                            const updated = users.value.find(u => u.name === currentUser.value.name);
+                            if (updated) currentUser.value = updated;
+                        }
+                    } catch (e) { console.error("Error fetching data:", e); }
+                    loading.value = false;
+                };
 
-                if (assigned === selectedSpotlightUser.Name.toLowerCase()) {
-                    qDiv.appendChild(createChoreCard(name, basePoints, status ? 'border-slate-300' : 'border-theme', status, true));
-                } else if (assigned === 'open') {
-                    bDiv.appendChild(createChoreCard(name, basePoints, status ? 'border-slate-300' : 'border-amber-400', status, true));
-                }
-            });
+                onMounted(fetchData);
 
-            if (!qDiv.innerHTML) qDiv.innerHTML = '<p class="text-[8px] text-slate-400 italic">No specific tasks assigned.</p>';
-            if (!bDiv.innerHTML) bDiv.innerHTML = '<p class="text-[8px] text-slate-400 italic">No open adventures available.</p>';
-        }
+                const isParent = (u) => {
+                    if (!u) return false;
+                    return (u.role || "").toLowerCase().includes("parent");
+                };
 
-        function renderApprovalQueue() {
-            const queue = document.getElementById('approvalQueue');
-            queue.innerHTML = '';
-            const pending = (appData.taskLog || []).filter(t => String(t.Status || '').toLowerCase() === 'pending');
-            document.getElementById('pendingCount').innerText = pending.length;
-            if (!pending.length) { queue.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs font-bold italic bg-white/20 rounded-2xl border border-dashed border-white/40">The queue is empty!</div>`; return; }
-            pending.forEach(task => {
-                const card = document.createElement('div');
-                card.className = "card-glass p-4 rounded-2xl border-l-8 border-blue-500 space-y-4";
-                card.innerHTML = `<div class="flex justify-between items-start"><div><p class="text-[9px] font-black text-blue-600 uppercase tracking-widest">${task['Worker Name']}</p><h4 class="font-black text-slate-800">${task['Task Name']}</h4></div><p class="font-black text-lg text-amber-600">${task['Points Potential']}</p></div><div class="flex gap-2"><button onclick="approveJob('${task['Worker Name']}', '${task['Task Name']}', ${task['Points Potential']}, true)" class="flex-1 bg-green-500 text-white py-2 rounded-xl font-black text-[9px] uppercase shadow-md">Grant</button><button onclick="approveJob('${task['Worker Name']}', '${task['Task Name']}', ${task['Points Potential']}, false)" class="px-4 bg-white/50 border border-white text-slate-500 py-2 rounded-xl font-black text-[9px] uppercase shadow-sm">Deny</button></div>`;
-                queue.appendChild(card);
-            });
-        }
+                const selectUser = (u) => {
+                    currentUser.value = u;
+                    if (isParent(u)) {
+                        parentViewKid.value = users.value.find(x => !isParent(x))?.name || "Approvals";
+                    }
+                };
 
-        function renderBriefing() {
-            const briefing = document.getElementById('dailyBriefing');
-            briefing.innerHTML = '';
-            const todaysLogs = (appData.taskLog || []).filter(l => isToday(l.Timestamp) && l.Status !== 'Pending');
-            if (!todaysLogs.length) { briefing.innerHTML = `<p class="text-center text-xs text-slate-400 py-4 italic">No completed activities yet today.</p>`; return; }
-            todaysLogs.sort((a,b) => new Date(b.Timestamp) - new Date(a.Timestamp)).forEach(log => {
-                const item = document.createElement('div');
-                item.className = "flex items-center gap-3 p-3 bg-white/40 rounded-xl border border-white/50 text-xs";
-                const isPositive = log.Status === 'Approved';
-                const char = CHARACTER_MAP[log['Worker Name']];
-                item.innerHTML = `
-                    <img src="${char?.img || ''}" class="w-8 h-8 rounded-lg object-cover border border-white shadow-sm">
-                    <div class="flex-1">
-                        <p class="font-black text-slate-800">${log['Worker Name']}</p>
-                        <p class="text-[10px] text-slate-500 truncate">${log['Task Name']}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-black ${isPositive ? 'text-green-600' : 'text-red-500'}">${isPositive ? '+' : '-'}${log['Points Potential']}</p>
-                        <p class="text-[8px] uppercase font-bold text-slate-400">${log.Status}</p>
-                    </div>`;
-                briefing.appendChild(item);
-            });
-        }
+                const logout = () => {
+                    currentUser.value = null;
+                    parentViewKid.value = "";
+                };
 
-        async function handleAdjustment(isPositive) {
-            if (!selectedSpotlightUser) return;
-            const user = selectedSpotlightUser.Name;
-            const points = parseInt(document.getElementById('adjPoints').value);
-            const reason = document.getElementById('adjReason').value || "Manual Adjustment";
-            if (!points) { showToast("How many points?"); return; }
-            showToast("Waving wand...");
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ action: "approveChore", worker: user, choreName: reason, points: isPositive ? points : -points, approved: true, approverName: currentUser.Name })
+                const assignedChores = computed(() => {
+                    if (!currentUser.value) return [];
+                    return chores.value.filter(c => (c.assignedTo || "").toLowerCase().trim() === currentUser.value.name.toLowerCase().trim());
                 });
-                showToast("Magic applied!");
-                document.getElementById('adjPoints').value = '';
-                document.getElementById('adjReason').value = '';
-                setTimeout(refreshData, 1500);
-            } catch (e) { showToast("Wand malfunction!"); }
-        }
+                
+                const availableOpenChores = computed(() => {
+                    return chores.value.filter(c => (c.assignedTo || "").toLowerCase().trim() === "open");
+                });
 
-        async function approveJob(worker, task, points, approved) {
-            showToast("Processing...");
-            try {
-                await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "approveChore", worker: worker, choreName: task, points: points, approved: approved, approverName: currentUser.Name }) });
-                showToast(approved ? "Points granted! ✨" : "Review finished.");
-                setTimeout(refreshData, 1500);
-            } catch (e) { showToast("Connection failed."); }
-        }
+                const getChoreLock = (chore, isGlobal = false) => {
+                    if (!currentUser.value) return { isLocked: false };
+                    const now = new Date().getTime();
+                    const frequency = (chore.frequency || "Daily").toLowerCase().trim();
+                    const COOLDOWNS = { unlimited: 1000, daily: 86400000, weekly: 604800000 };
+                    const cooldown = COOLDOWNS[frequency] || COOLDOWNS.daily;
+                    
+                    const relevantLogs = taskLog.value.filter(t => 
+                        t.job === chore.name && (isGlobal ? t.username === currentUser.value.name : true)
+                    );
+                    
+                    const isPending = relevantLogs.some(t => t.status === 'Pending');
+                    if (isPending) return { isLocked: true, reason: 'Pending' };
+                    
+                    const latestApproval = Math.max(0, ...relevantLogs.filter(t => t.status === 'Approved').map(t => new Date(t.timestamp).getTime()));
+                    const isLocked = (now - latestApproval) < cooldown;
+                    
+                    if (isLocked) {
+                        const rem = cooldown - (now - latestApproval);
+                        const h = Math.floor(rem / 3600000);
+                        const m = Math.ceil((rem % 3600000) / 60000);
+                        return { isLocked: true, reason: 'Completed', timeLeft: h > 0 ? `${h}h` : `${m}m` };
+                    }
+                    return { isLocked: false };
+                };
 
-        function logout() { 
-            localStorage.removeItem('choreHero'); 
-            currentUser = null;
-            selectedSpotlightUser = null;
-            renderUserSelection();
-        }
+                const getChoreStatus = (chore, isGlobal = false) => {
+                    const lock = getChoreLock(chore, isGlobal);
+                    if (lock.reason === 'Pending') return 'Pending';
+                    if (lock.reason === 'Completed') return 'Approved';
+                    return null;
+                };
 
-        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.remove('opacity-0', 'translate-y-10'); setTimeout(() => { t.classList.add('opacity-0', 'translate-y-10'); }, 3000); }
+                const getChoreButtonLabel = (chore, isGlobal = false) => {
+                    const lock = getChoreLock(chore, isGlobal);
+                    if (lock.reason === 'Pending') return 'In Review';
+                    if (lock.reason === 'Completed') return lock.timeLeft;
+                    return 'Complete';
+                };
+
+                const completeChore = async (chore) => {
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: chore.name, points: chore.basePoints, status: 'Pending' } }) });
+                        await fetchData();
+                        showToast("Sent for Approval");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const buyItem = async (item) => {
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: `PURCHASE: ${item.name}`, points: -Math.abs(item.cost), status: 'Pending' } }) });
+                        await fetchData();
+                        showToast("Purchase Pending");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const approveTask = async (task) => {
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', data: { ...task, userName: task.username, approvedBy: currentUser.value.name, status: 'Approved' } }) });
+                        await fetchData();
+                        showToast("Approved!");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const rejectTask = async (task) => {
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', data: { ...task, userName: task.username, approvedBy: currentUser.value.name, status: 'Rejected' } }) });
+                        await fetchData();
+                        showToast("Rejected");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const submitManualAdjust = async () => {
+                    if (!manualAdjust.value.amount || !manualAdjust.value.reason) return;
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: parentViewKid.value, choreName: manualAdjust.value.reason, points: manualAdjust.value.amount, status: 'Approved', approvedBy: currentUser.value.name } }) });
+                        manualAdjust.value = { amount: null, reason: "" };
+                        await fetchData();
+                        showToast("Adjusted!");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const statusBadgeClass = (status) => {
+                    if (status === 'Pending') return 'status-pending';
+                    if (status === 'Approved') return 'status-approved';
+                    return '';
+                };
+
+                const showToast = (m) => { toast.value = m; setTimeout(() => toast.value = "", 3000); };
+                const getKidStats = (n) => users.value.find(u => u.name === n) || {};
+                const getKidLogs = (n) => taskLog.value.filter(l => l.username === n);
+                
+                const getTodayLog = (n) => {
+                    const todayStr = new Date().toLocaleDateString();
+                    return getKidLogs(n).filter(l => new Date(l.timestamp).toLocaleDateString() === todayStr);
+                };
+
+                const getFiveDaySummary = (n) => {
+                    const results = [];
+                    const logs = getKidLogs(n).filter(l => l.status === 'Approved');
+                    for (let i = 0; i < 5; i++) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        const dStr = d.toLocaleDateString();
+                        const dailyTotal = logs
+                            .filter(l => new Date(l.timestamp).toLocaleDateString() === dStr)
+                            .reduce((sum, curr) => sum + (curr.points || 0), 0);
+                        
+                        results.push({
+                            label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : d.toLocaleDateString([], { weekday: 'short' }),
+                            total: dailyTotal,
+                            date: dStr
+                        });
+                    }
+                    return results;
+                };
+
+                const formatDate = (d, timeOnly = false) => {
+                    const date = new Date(d);
+                    if (timeOnly) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                };
+
+                return {
+                    loading, currentUser, users, chores, storeItems, taskLog, toast, parentViewKid, childView, manualAdjust,
+                    selectUser, logout, kids: computed(() => users.value.filter(u => !isParent(u))),
+                    isParent, assignedChores, availableOpenChores, pendingTasks: computed(() => taskLog.value.filter(t => t.status === 'Pending')),
+                    completeChore, buyItem, approveTask, rejectTask, submitManualAdjust, getKidStats, getChoreStatus, getChoreButtonLabel, 
+                    getChoreLock, statusBadgeClass, fetchData, getAvatarIcon, getKidLogs, getTodayLog, getFiveDaySummary, formatDate
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
