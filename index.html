@@ -9,13 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sw-blue: #93d5ed;
-            --sw-pink: #f7a8c4;
-            --sw-gold: #f9d976;
-            --sw-white: #ffffff;
-            --sw-lavender: #c3a6cb;
-            --sw-mint: #a8e6cf;
-            --sw-dark: #4a4a4a;
+            /* "It's a Small World" Whimsical Palette */
+            --sw-blue: #93d5ed;     /* Sky Blue */
+            --sw-pink: #f7a8c4;     /* Bubblegum Pink */
+            --sw-gold: #f9d976;     /* Sunshine Gold */
+            --sw-white: #ffffff;    /* Pure White */
+            --sw-lavender: #c3a6cb; /* Soft Lavender */
+            --sw-mint: #a8e6cf;     /* Mint Green */
+            --sw-dark: #4a4a4a;     /* Soft Charcoal for text */
         }
 
         body {
@@ -23,6 +24,7 @@
             background-color: #f0faff;
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2393d5ed' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4v-4H4v4H0v2h4v4h2v-4h4v-2H6zm30 0v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             color: var(--sw-dark);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .header-font { font-family: 'Fredoka One', cursive; }
@@ -49,22 +51,87 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
 
-        .btn-magic:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0px #5ea5c1; }
+        .btn-magic:hover:not(:disabled) {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
 
-        .nav-btn-active { color: var(--sw-blue); position: relative; }
+        .btn-magic:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px #5ea5c1;
+        }
+
+        .btn-magic:disabled {
+            background: #e2e8f0 !important;
+            box-shadow: 0 4px 0px #cbd5e1;
+            cursor: not-allowed;
+            color: #94a3b8 !important;
+        }
+
+        .btn-pink {
+            background: linear-gradient(135deg, var(--sw-pink) 0%, #e88fb1 100%) !important;
+            box-shadow: 0 4px 0px #cf799a;
+        }
+
+        .nav-btn-active {
+            color: var(--sw-blue);
+            position: relative;
+        }
         .nav-btn-active::after {
-            content: ''; position: absolute; bottom: 0; left: 25%; right: 25%; height: 4px; background: var(--sw-gold); border-radius: 2px;
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            right: 25%;
+            height: 4px;
+            background: var(--sw-gold);
+            border-radius: 2px;
         }
 
-        header { background: linear-gradient(to right, var(--sw-blue), var(--sw-lavender)); border-bottom: 6px solid var(--sw-gold); }
+        header {
+            background: linear-gradient(to right, var(--sw-blue), var(--sw-lavender));
+            border-bottom: 6px solid var(--sw-gold);
+        }
 
-        .status-pill { font-size: 0.65rem; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; font-weight: 800; }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--sw-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .status-pill {
+            font-size: 0.65rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
         .status-pending { background: var(--sw-gold); color: #856404; }
         .status-approved { background: var(--sw-mint); color: #155724; }
-        
-        .loading-overlay { position: fixed; inset: 0; background: var(--sw-white); display: flex; align-items: center; justify-content: center; z-index: 100; }
+
+        .clock-spinner {
+            font-size: 4rem;
+            color: var(--sw-gold);
+            animation: clock-wobble 2s infinite ease-in-out;
+        }
+
+        @keyframes clock-wobble {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        @media (max-width: 640px) {
+            .mobile-grid { grid-template-columns: 1fr; }
+            .mobile-padding { padding: 1rem; }
+            .mobile-header-text { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12">
@@ -74,178 +141,299 @@
     </script>
 
     <div id="app">
+        <!-- Loading Overlay -->
         <div v-if="loading" class="loading-overlay">
-            <div class="text-center">
-                <i class="fas fa-clock fa-spin text-4xl mb-4" style="color: var(--sw-gold)"></i>
-                <p class="header-font text-xl" style="color: var(--sw-blue)">Loading the Kingdom...</p>
+            <div class="text-center px-4">
+                <i class="fas fa-clock clock-spinner mb-4"></i>
+                <p class="header-font text-xl md:text-2xl" style="color: var(--sw-blue)">Setting the stage...</p>
+                <p class="text-xs uppercase tracking-widest mt-2 text-gray-400">It's a small world after all</p>
             </div>
         </div>
 
-        <header class="text-white p-4 shadow-lg sticky top-0 z-40">
+        <header class="text-white p-3 md:p-4 shadow-lg sticky top-0 z-40">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
-                <div class="flex items-center space-x-3 cursor-pointer" @click="fetchData">
-                    <i class="fas fa-globe-americas text-white text-2xl"></i>
-                    <h1 class="header-font text-xl uppercase">Small World Quests</h1>
+                <div class="flex items-center space-x-2 md:space-x-3 cursor-pointer" @click="fetchData">
+                    <i class="fas fa-globe-americas text-white text-2xl md:text-3xl"></i>
+                    <h1 class="header-font text-lg md:text-2xl tracking-tight uppercase">Small World Quests</h1>
                 </div>
-                <div v-if="currentUser" class="flex items-center space-x-4">
-                    <span class="font-bold hidden sm:inline">{{ currentUser.name }}</span>
-                    <button @click="logout" class="bg-white/30 hover:bg-white/40 p-2 rounded-full transition"><i class="fas fa-home"></i></button>
+                <div v-if="currentUser" class="flex items-center space-x-3 md:space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-[10px] uppercase font-bold text-white/80 tracking-widest leading-none mb-1">Explorer</p>
+                        <p class="font-bold leading-none">{{ currentUser.name }}</p>
+                    </div>
+                    <button @click="logout" class="bg-white/30 hover:bg-white/40 p-2.5 rounded-full transition active:scale-95">
+                        <i class="fas fa-home"></i>
+                    </button>
                 </div>
             </div>
         </header>
 
         <main class="max-w-6xl mx-auto px-4 py-6">
-            <div v-if="!currentUser" class="text-center py-12">
-                <h2 class="header-font text-4xl mb-8 uppercase" style="color: var(--sw-pink)">Join the Song</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div v-for="user in users" :key="user.name" @click="selectUser(user)" class="card-disney p-6 cursor-pointer transform active:scale-95 transition">
-                        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white shadow-inner" 
+            <!-- LOGIN SCREEN -->
+            <div v-if="!currentUser" class="text-center py-6 md:py-12">
+                <h2 class="header-font text-3xl md:text-5xl mb-2 uppercase tracking-tighter" style="color: var(--sw-pink)">Join the Song</h2>
+                <p class="text-gray-400 font-semibold mb-8 md:mb-12 text-sm md:text-base uppercase tracking-widest">Select Your Passport</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                    <div v-for="user in users" :key="user.name" @click="selectUser(user)"
+                         class="card-disney p-4 md:p-8 cursor-pointer transform active:scale-95 md:hover:-translate-y-2 transition duration-300 group">
+                        <div class="w-14 h-14 md:w-20 md:h-20 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center text-2xl md:text-3xl transition text-white shadow-inner" 
                              :style="{ backgroundColor: isParent(user) ? 'var(--sw-lavender)' : 'var(--sw-blue)' }">
-                            <i :class="getAvatarIcon(user)" class="text-2xl"></i>
+                            <i :class="getAvatarIcon(user)"></i>
                         </div>
-                        <h3 class="header-font text-lg">{{ user.name }}</h3>
+                        <h3 class="header-font text-base md:text-xl truncate" style="color: var(--sw-dark)">{{ user.name }}</h3>
+                        <p class="text-[9px] md:text-[10px] font-bold uppercase text-gray-400 mt-1 tracking-widest">{{ user.role }}</p>
                     </div>
                 </div>
             </div>
 
             <div v-else>
-                <div v-if="isParent(currentUser)" class="space-y-8">
-                    <div class="flex space-x-4 border-b-2 border-sw-blue/20 overflow-x-auto pb-1">
+                <!-- CHILD VIEW -->
+                <div v-if="!isParent(currentUser)" class="space-y-6 md:space-y-8">
+                    <div class="flex space-x-6 md:space-x-8 border-b-2 border-sw-blue/20 overflow-x-auto no-scrollbar">
+                        <button @click="childView = 'quests'" :class="childView === 'quests' ? 'nav-btn-active' : 'text-gray-300'" class="pb-3 font-bold uppercase tracking-widest text-[10px] md:text-xs transition-all whitespace-nowrap">Main Attractions</button>
+                        <button @click="childView = 'bazaar'" :class="childView === 'bazaar' ? 'nav-btn-active' : 'text-gray-300'" class="pb-3 font-bold uppercase tracking-widest text-[10px] md:text-xs transition-all whitespace-nowrap">Gift Shop</button>
+                    </div>
+
+                    <div v-if="childView === 'quests'" class="space-y-6 md:space-y-8">
+                        <!-- Stat Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4" style="border-color: var(--sw-pink)">
+                                <div class="p-3 md:p-4 rounded-full" style="background: var(--sw-pink); color: white;"><i class="fas fa-star text-xl md:text-2xl"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Tokens</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--sw-pink)">{{ currentUser.points || 0 }} <span class="text-xs">pts</span></p>
+                                </div>
+                            </div>
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4" style="border-color: var(--sw-lavender)">
+                                <div class="p-3 md:p-4 rounded-full" style="background: var(--sw-lavender); color: white;"><i class="fas fa-smile text-xl md:text-2xl"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Explorer Level</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--sw-dark)">{{ currentUser.level || 1 }}</p>
+                                </div>
+                            </div>
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4" style="border-color: var(--sw-gold)">
+                                <div class="p-3 md:p-4 rounded-full" style="background: var(--sw-gold); color: white;"><i class="fas fa-sun text-xl md:text-2xl"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Sunny Streak</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--sw-dark)">{{ currentUser.streak || 0 }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CHORE SECTIONS -->
+                        <section>
+                            <h2 class="header-font text-xl md:text-2xl mb-4 md:mb-6 flex items-center px-1" style="color: var(--sw-blue)">
+                                <i class="fas fa-map-signs mr-3"></i> Main Attractions
+                            </h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div v-for="chore in assignedChores" :key="chore.name" 
+                                     class="card-disney p-4 md:p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8" style="border-left-color: var(--sw-mint)">
+                                    <div class="text-center sm:text-left mb-4 sm:mb-0 w-full sm:w-auto">
+                                        <h4 class="font-bold text-base md:text-lg uppercase tracking-tight" style="color: var(--sw-dark)">{{ chore.name }}</h4>
+                                        <div class="flex items-center justify-center sm:justify-start space-x-2 mt-1">
+                                            <span class="text-[9px] px-2 py-0.5 rounded-full font-black tracking-widest text-white" style="background: var(--sw-mint)">+{{ chore.basePoints || 0 }} TOKENS</span>
+                                            <span v-if="getChoreStatus(chore)" :class="statusBadgeClass(getChoreStatus(chore))" class="status-pill">
+                                                {{ getChoreStatus(chore) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button @click="completeChore(chore)" 
+                                            :disabled="getChoreLock(chore).isLocked"
+                                            class="btn-magic px-8 md:px-10 py-3 rounded-full text-sm w-full sm:w-auto min-w-[140px]">
+                                        {{ getChoreButtonLabel(chore) }}
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h2 class="header-font text-xl md:text-2xl mb-4 md:mb-6 flex items-center px-1" style="color: var(--sw-lavender)">
+                                <i class="fas fa-ticket-alt mr-3"></i> C-Tickets
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div v-for="chore in availableOpenChores" :key="chore.name" 
+                                     class="card-disney p-4 md:p-5 flex flex-col justify-between h-full" style="border-color: var(--sw-lavender)">
+                                    <h4 class="font-bold uppercase text-xs md:text-sm mb-4 leading-tight" style="color: var(--sw-dark)">{{ chore.name }}</h4>
+                                    <div class="flex flex-col space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-black text-xs md:text-sm" style="color: var(--sw-lavender)">{{ chore.basePoints || 0 }} PTS</span>
+                                            <span v-if="getChoreStatus(chore, true)" :class="statusBadgeClass(getChoreStatus(chore, true))" class="status-pill">
+                                                {{ getChoreStatus(chore, true) }}
+                                            </span>
+                                        </div>
+                                        <button @click="completeChore(chore)" 
+                                                :disabled="getChoreLock(chore, true).isLocked"
+                                                class="btn-magic w-full py-2.5 rounded-full text-[10px] md:text-xs">
+                                            {{ getChoreButtonLabel(chore, true) }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- GIFT SHOP VIEW -->
+                    <div v-if="childView === 'bazaar'" class="space-y-6 md:space-y-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                            <div v-for="item in storeItems" :key="item.name" class="card-disney flex flex-col justify-between hover:scale-[1.02] transition" style="border-color: var(--sw-pink)">
+                                <div class="h-40 md:h-48 bg-pink-50 flex items-center justify-center">
+                                    <img v-if="item.image" :src="item.image" class="w-full h-full object-cover">
+                                    <i v-else class="fas fa-gift text-4xl text-pink-200"></i>
+                                </div>
+                                <div class="p-4 md:p-5">
+                                    <h4 class="header-font text-base md:text-lg uppercase truncate" style="color: var(--sw-dark)">{{ item.name }}</h4>
+                                    <div class="mt-4 flex items-center justify-between">
+                                        <span class="font-black text-lg md:text-xl" style="color: var(--sw-pink)">{{ item.cost }} <i class="fas fa-star text-sw-gold"></i></span>
+                                        <button @click="buyItem(item)" 
+                                                :disabled="currentUser.points < item.cost"
+                                                class="btn-magic btn-pink px-6 py-2 rounded-full text-[10px] md:text-xs">
+                                            Claim
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PARENT VIEW -->
+                <div v-else class="space-y-6 md:space-y-8">
+                    <!-- Parent Nav -->
+                    <div class="flex space-x-2 md:space-x-4 border-b-2 border-sw-blue/20 overflow-x-auto no-scrollbar pb-1">
                         <button v-for="kid in kids" @click="parentViewKid = kid.name"
                                 :class="parentViewKid === kid.name ? 'nav-btn-active font-black' : 'text-gray-300 font-bold'"
-                                class="px-4 py-3 transition text-xs uppercase tracking-widest whitespace-nowrap">{{ kid.name }}</button>
+                                class="px-3 md:px-4 py-3 transition text-[10px] md:text-xs uppercase tracking-widest whitespace-nowrap">{{ kid.name }}</button>
                         <button @click="parentViewKid = 'Approvals'"
                                 :class="parentViewKid === 'Approvals' ? 'nav-btn-active font-black' : 'text-gray-300 font-bold'"
-                                class="px-4 py-3 transition text-xs uppercase tracking-widest relative whitespace-nowrap">
-                            Logbook <span v-if="pendingTasks.length > 0" class="ml-2 bg-pink-400 text-white text-[10px] px-2 py-0.5 rounded-full">{{ pendingTasks.length }}</span>
+                                class="px-3 md:px-4 py-3 transition text-[10px] md:text-xs uppercase tracking-widest relative whitespace-nowrap">
+                            Logbook <span v-if="pendingTasks.length > 0" class="ml-1 md:ml-2 bg-pink-400 text-white text-[9px] md:text-[10px] px-2 py-0.5 rounded-full">{{ pendingTasks.length }}</span>
                         </button>
                     </div>
 
+                    <!-- Approvals Queue -->
                     <div v-if="parentViewKid === 'Approvals'" class="space-y-4">
-                        <h3 class="header-font text-xl uppercase" style="color: var(--sw-pink)">Journey Logbook</h3>
+                        <h3 class="header-font text-lg md:text-xl uppercase px-1" style="color: var(--sw-pink)">Journey Logbook</h3>
                         <div v-if="pendingTasks.length === 0" class="p-12 text-center text-gray-300 italic">No new entries in the song.</div>
-                        <div v-for="task in pendingTasks" :key="task.timestamp" class="card-disney p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 gap-4" style="border-left-color: var(--sw-gold)">
-                            <div class="w-full">
-                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white" style="background: var(--sw-blue)">{{ task.username }}</span>
-                                <h4 class="font-bold text-lg mt-1 uppercase">{{ task.job }}</h4>
+                        <div v-for="task in pendingTasks" :key="task.timestamp" class="card-disney p-4 md:p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 gap-4" style="border-left-color: var(--sw-gold)">
+                            <div class="w-full text-center sm:text-left">
+                                <span class="text-[9px] md:text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white" style="background: var(--sw-blue)">{{ task.username }}</span>
+                                <h4 class="font-bold text-lg md:text-xl mt-1 uppercase leading-tight" style="color: var(--sw-dark)">{{ task.job }}</h4>
                                 <p class="text-xs text-gray-400 italic">{{ task.points }} tokens earned</p>
                             </div>
                             <div class="flex space-x-2 w-full sm:w-auto">
-                                <button @click="approveTask(task)" class="bg-green-400 text-white flex-1 sm:flex-none px-6 py-3 rounded-full font-bold uppercase text-xs shadow-md">Approve</button>
-                                <button @click="rejectTask(task)" class="bg-gray-50 text-gray-400 flex-1 sm:flex-none px-4 py-3 rounded-full font-bold uppercase text-xs border border-gray-100">Skip</button>
+                                <button @click="approveTask(task)" class="bg-green-400 text-white flex-1 sm:flex-none px-6 py-3 rounded-full font-bold uppercase text-[10px] md:text-xs shadow-md active:scale-95">Approve</button>
+                                <button @click="rejectTask(task)" class="bg-gray-50 text-gray-400 flex-1 sm:flex-none px-4 py-3 rounded-full font-bold uppercase text-[10px] md:text-xs border border-gray-100 active:scale-95">Skip</button>
                             </div>
                         </div>
                     </div>
                     
+                    <!-- CHILD DASHBOARD -->
                     <div v-else class="space-y-6">
-                        <div class="card-disney p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6" style="border-color: var(--sw-blue)">
+                        <!-- Profile Header -->
+                        <div class="card-disney p-6 md:p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6" style="border-color: var(--sw-blue)">
                             <div class="text-center md:text-left">
-                                <h2 class="header-font text-4xl uppercase" style="color: var(--sw-blue)">{{ parentViewKid }}</h2>
-                                <p class="text-2xl font-black mt-2 uppercase" style="color: var(--sw-pink)">{{ getKidStats(parentViewKid).points || 0 }} Tokens</p>
+                                <h2 class="header-font text-3xl md:text-5xl uppercase" style="color: var(--sw-blue)">{{ parentViewKid }}</h2>
+                                <p class="text-xl md:text-2xl font-black mt-2 uppercase" style="color: var(--sw-pink)">{{ getKidStats(parentViewKid).points || 0 }} Tokens</p>
                             </div>
                             <div class="flex items-center space-x-8">
                                 <div class="text-center">
                                     <p class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Level</p>
-                                    <p class="text-3xl font-black">{{ getKidStats(parentViewKid).level || 1 }}</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--sw-dark)">{{ getKidStats(parentViewKid).level || 1 }}</p>
                                 </div>
                                 <div class="text-center">
                                     <p class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Streak</p>
-                                    <p class="text-3xl font-black" style="color: var(--sw-gold)">{{ getKidStats(parentViewKid).streak || 0 }}</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--sw-gold)">{{ getKidStats(parentViewKid).streak || 0 }}</p>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Dashboard Stats Row -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- TODAY CARD -->
                             <div class="card-disney" style="border-color: var(--sw-mint)">
-                                <div class="p-3 border-b border-gray-50 bg-green-50"><h3 class="header-font text-xs uppercase" style="color: var(--sw-mint)">Today's Journey</h3></div>
-                                <div class="p-4 h-[240px] overflow-y-auto">
-                                    <div v-if="getTodayLog(parentViewKid).length === 0" class="h-full flex items-center justify-center text-gray-300 italic text-sm">Blank map today.</div>
+                                <div class="p-3 md:p-4 border-b border-gray-50 bg-green-50">
+                                    <h3 class="header-font text-[11px] md:text-sm uppercase font-bold" style="color: var(--sw-mint)">Today's Journey</h3>
+                                </div>
+                                <div class="p-4 h-[200px] md:h-[240px] overflow-y-auto">
+                                    <div v-if="getTodayLog(parentViewKid).length === 0" class="h-full flex items-center justify-center text-gray-300 italic text-sm">
+                                        The map is blank today.
+                                    </div>
                                     <div v-else class="space-y-3">
-                                        <div v-for="log in getTodayLog(parentViewKid)" :key="log.timestamp" class="flex justify-between items-center text-xs border-b border-gray-50 pb-2">
-                                            <div><p class="font-bold uppercase">{{ log.job }}</p><p class="text-[9px] text-gray-400">{{ formatDate(log.timestamp, true) }}</p></div>
-                                            <span :class="log.points >= 0 ? 'text-green-500' : 'text-pink-500'" class="font-black">+{{ log.points }}</span>
+                                        <div v-for="log in getTodayLog(parentViewKid)" :key="log.timestamp" class="flex justify-between items-center text-xs md:text-sm border-b border-gray-50 pb-2">
+                                            <div class="pr-2">
+                                                <p class="font-bold uppercase text-[9px] md:text-[10px] leading-tight">{{ log.job }}</p>
+                                                <p class="text-[8px] md:text-[9px] text-gray-400">{{ formatDate(log.timestamp, true) }}</p>
+                                            </div>
+                                            <div class="text-right whitespace-nowrap">
+                                                <span :class="log.points >= 0 ? 'text-green-500' : 'text-pink-500'" class="font-black text-[11px] md:text-xs">
+                                                    {{ log.points >= 0 ? '+' : '' }}{{ log.points }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- 5 DAY HISTORY CARD -->
                             <div class="card-disney" style="border-color: var(--sw-blue)">
-                                <div class="p-3 border-b border-gray-50 bg-blue-50"><h3 class="header-font text-xs uppercase" style="color: var(--sw-blue)">Last 5 Stops</h3></div>
-                                <div class="p-4 h-[240px]">
+                                <div class="p-3 md:p-4 border-b border-gray-50 bg-blue-50">
+                                    <h3 class="header-font text-[11px] md:text-sm uppercase font-bold" style="color: var(--sw-blue)">Last 5 Stops</h3>
+                                </div>
+                                <div class="p-4 h-[200px] md:h-[240px]">
                                     <div class="space-y-4">
                                         <div v-for="day in getFiveDaySummary(parentViewKid)" :key="day.date" class="flex justify-between items-center">
-                                            <span class="text-[10px] font-bold uppercase text-gray-400 w-10">{{ day.label }}</span>
-                                            <div class="flex-1 mx-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full bg-blue-300 transition-all" :style="{ width: Math.min(100, (day.total / 10) * 100) + '%' }"></div>
+                                            <span class="text-[10px] md:text-xs font-bold uppercase text-gray-400 w-10">{{ day.label }}</span>
+                                            <div class="flex-1 mx-3 md:mx-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                <div class="h-full bg-blue-300 transition-all duration-500" :style="{ width: Math.min(100, (day.total / 10) * 100) + '%' }"></div>
                                             </div>
-                                            <span class="text-[10px] font-black w-10 text-right">{{ day.total }} pts</span>
+                                            <span class="text-[10px] md:text-xs font-black w-12 text-right" style="color: var(--sw-dark)">{{ day.total }} <span class="text-[8px] font-normal">pts</span></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="card-disney p-6" style="border-color: var(--sw-gold)">
-                            <h3 class="header-font text-lg mb-4 uppercase" style="color: var(--sw-gold)">Passport Adjustment</h3>
-                            <div class="flex flex-col md:flex-row gap-4">
-                                <input type="number" v-model="manualAdjust.amount" placeholder="Tokens" class="w-full md:flex-1 p-3 rounded-full border-2 border-sw-gold/20 outline-none focus:border-sw-gold">
-                                <input type="text" v-model="manualAdjust.reason" placeholder="Event Name" class="w-full md:flex-[2] p-3 rounded-full border-2 border-sw-gold/20 outline-none focus:border-sw-gold">
-                                <button @click="submitManualAdjust" class="btn-magic px-8 py-3 rounded-full" style="background: var(--sw-gold) !important; box-shadow: 0 4px 0px #d4b85c;">Update</button>
+                        <!-- Manual Adjust -->
+                        <div class="card-disney p-5 md:p-6" style="border-color: var(--sw-gold)">
+                            <h3 class="header-font text-base md:text-lg mb-4 uppercase" style="color: var(--sw-gold)">Passport Adjustment</h3>
+                            <div class="flex flex-col md:flex-row gap-3 md:gap-4">
+                                <input type="number" v-model="manualAdjust.amount" placeholder="Tokens" class="w-full md:flex-1 p-3 rounded-full border-2 border-sw-gold/20 outline-none focus:border-sw-gold text-sm">
+                                <input type="text" v-model="manualAdjust.reason" placeholder="Event Name" class="w-full md:flex-[2] p-3 rounded-full border-2 border-sw-gold/20 outline-none focus:border-sw-gold text-sm">
+                                <button @click="submitManualAdjust" class="btn-magic px-8 py-3 rounded-full w-full md:w-auto active:scale-95" style="background: var(--sw-gold) !important; box-shadow: 0 4px 0px #d4b85c;">Update</button>
                             </div>
                         </div>
 
+                        <!-- Activity History (Full) -->
                         <div class="card-disney">
-                            <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <h3 class="header-font text-xs uppercase font-bold text-gray-400">Full Expedition Log</h3>
+                            <div class="p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                <h3 class="header-font text-[11px] md:text-sm uppercase font-bold text-gray-400">Full Expedition Log</h3>
                             </div>
-                            <div class="max-h-[300px] overflow-y-auto text-sm">
-                                <div v-for="log in getKidLogs(parentViewKid)" :key="log.timestamp" class="p-4 border-b border-gray-50 flex justify-between items-center hover:bg-blue-50/30 transition">
-                                    <div><p class="font-bold text-[11px] uppercase">{{ log.job }}</p><p class="text-[9px] text-gray-400 mt-0.5">{{ formatDate(log.timestamp) }}</p></div>
-                                    <div class="text-right">
-                                        <p :class="log.points >= 0 ? 'text-green-500' : 'text-pink-500'" class="font-black text-sm mb-1">{{ log.points >= 0 ? '+' : '' }}{{ log.points }}</p>
-                                        <span :class="statusBadgeClass(log.status)" class="status-pill text-[8px]">{{ log.status }}</span>
+                            <div class="max-h-[300px] overflow-y-auto text-xs md:text-sm">
+                                <div v-for="log in getKidLogs(parentViewKid)" :key="log.timestamp" class="p-3 md:p-4 border-b border-gray-50 flex justify-between items-center hover:bg-blue-50/30 transition">
+                                    <div class="pr-2">
+                                        <p class="font-bold text-[10px] md:text-[11px] uppercase tracking-tight leading-tight">{{ log.job }}</p>
+                                        <p class="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{{ formatDate(log.timestamp) }}</p>
+                                    </div>
+                                    <div class="text-right whitespace-nowrap">
+                                        <p :class="log.points >= 0 ? 'text-green-500' : 'text-pink-500'" class="font-black text-[12px] md:text-sm leading-none mb-1">
+                                            {{ log.points >= 0 ? '+' : '' }}{{ log.points }}
+                                        </p>
+                                        <span :class="statusBadgeClass(log.status)" class="status-pill text-[8px] md:text-[9px]">{{ log.status }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div v-else class="space-y-8">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div class="card-disney p-6 flex items-center space-x-4" style="border-color: var(--sw-pink)">
-                            <div class="p-4 rounded-full" style="background: var(--sw-pink); color: white;"><i class="fas fa-star text-2xl"></i></div>
-                            <div><p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Tokens</p><p class="text-3xl font-black" style="color: var(--sw-pink)">{{ currentUser.points || 0 }}</p></div>
-                        </div>
-                        <div class="card-disney p-6 flex items-center space-x-4" style="border-color: var(--sw-gold)">
-                            <div class="p-4 rounded-full" style="background: var(--sw-gold); color: white;"><i class="fas fa-sun text-2xl"></i></div>
-                            <div><p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Streak</p><p class="text-3xl font-black">{{ currentUser.streak || 0 }}</p></div>
-                        </div>
-                    </div>
-
-                    <h2 class="header-font text-2xl mb-6 px-1" style="color: var(--sw-blue)"><i class="fas fa-map-signs mr-3"></i> Today's Quests</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div v-for="chore in assignedChores" :key="chore.name" class="card-disney p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8" :style="{borderLeftColor: getChoreStatus(chore) === 'Approved' ? 'var(--sw-mint)' : 'var(--sw-blue)'}">
-                            <div class="text-center sm:text-left mb-4 sm:mb-0">
-                                <h4 class="font-bold text-lg uppercase tracking-tight">{{ chore.name }}</h4>
-                                <div class="flex items-center justify-center sm:justify-start space-x-2 mt-1">
-                                    <span class="text-[9px] px-2 py-0.5 rounded-full font-black text-white" style="background: var(--sw-blue)">{{ chore.basePoints || 0 }} PTS</span>
-                                    <span v-if="getChoreStatus(chore)" :class="statusBadgeClass(getChoreStatus(chore))" class="status-pill">{{ getChoreStatus(chore) }}</span>
-                                </div>
-                            </div>
-                            <button @click="completeChore(chore)" :disabled="getChoreStatus(chore)" class="btn-magic px-10 py-3 rounded-full text-sm">
-                                {{ getChoreStatus(chore) ? 'Done' : 'Finish' }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </main>
 
-        <div v-if="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white text-gray-800 px-6 py-4 rounded-3xl shadow-2xl z-50 border-t-4 border-sw-gold animate-bounce">
+        <!-- Toast Notification -->
+        <div v-if="toast" class="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white text-gray-800 px-6 py-4 rounded-3xl shadow-2xl z-50 border-t-4 border-sw-gold transform transition-all duration-300 animate-bounce">
             <div class="flex items-center space-x-3">
                 <i class="fas fa-magic text-sw-gold"></i>
-                <span class="header-font uppercase text-sm font-bold" style="color: var(--sw-blue)">{{ toast }}</span>
+                <span class="header-font uppercase tracking-tighter text-[10px] md:text-sm font-bold" style="color: var(--sw-blue)">{{ toast }}</span>
             </div>
         </div>
     </div>
@@ -259,10 +447,25 @@
                 const currentUser = ref(null);
                 const users = ref([]);
                 const chores = ref([]);
+                const storeItems = ref([]);
                 const taskLog = ref([]);
                 const toast = ref("");
                 const parentViewKid = ref("");
+                const childView = ref("quests");
                 const manualAdjust = ref({ amount: null, reason: "" });
+
+                const getAvatarIcon = (user) => {
+                    if (isParent(user)) return 'fas fa-globe';
+                    const name = (user.name || '').toLowerCase();
+                    if (name.includes('dj')) return 'fas fa-child';
+                    if (name.includes('alexsi')) return 'fas fa-star';
+                    if (name.includes('mia')) return 'fas fa-heart';
+                    if (name.includes('pyper')) return 'fas fa-feather';
+                    if (name.includes('emmy')) return 'fas fa-paint-brush';
+                    if (name.includes('izzy')) return 'fas fa-book-open';
+                    if (name.includes('ash')) return 'fas fa-leaf';
+                    return 'fas fa-smile';
+                };
 
                 const fetchData = async () => {
                     loading.value = true;
@@ -272,32 +475,82 @@
                         users.value = data.users || [];
                         chores.value = data.chores || [];
                         taskLog.value = (data.taskLog || []).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        storeItems.value = data.storeItems || [];
+
                         if (currentUser.value) {
-                            currentUser.value = users.value.find(u => u.name === currentUser.value.name);
+                            const updated = users.value.find(u => u.name === currentUser.value.name);
+                            if (updated) currentUser.value = updated;
                         }
-                    } catch (e) { console.error("Error:", e); }
+                    } catch (e) { console.error("Error fetching data:", e); }
                     loading.value = false;
                 };
 
                 onMounted(fetchData);
 
-                const isParent = (u) => (u.role || "").toLowerCase().includes("parent");
+                const isParent = (u) => {
+                    if (!u) return false;
+                    return (u.role || "").toLowerCase().includes("parent");
+                };
+
                 const selectUser = (u) => {
                     currentUser.value = u;
-                    if (isParent(u)) parentViewKid.value = users.value.find(x => !isParent(x))?.name || "Approvals";
+                    if (isParent(u)) {
+                        parentViewKid.value = users.value.find(x => !isParent(x))?.name || "Approvals";
+                    }
                 };
-                const logout = () => { currentUser.value = null; parentViewKid.value = ""; };
+
+                const logout = () => {
+                    currentUser.value = null;
+                    parentViewKid.value = "";
+                };
 
                 const assignedChores = computed(() => {
                     if (!currentUser.value) return [];
-                    return chores.value.filter(c => (c.assignedTo || "").toLowerCase() === currentUser.value.name.toLowerCase());
+                    return chores.value.filter(c => (c.assignedTo || "").toLowerCase().trim() === currentUser.value.name.toLowerCase().trim());
+                });
+                
+                const availableOpenChores = computed(() => {
+                    return chores.value.filter(c => (c.assignedTo || "").toLowerCase().trim() === "open");
                 });
 
-                const getChoreStatus = (chore) => {
-                    const logs = taskLog.value.filter(t => t.job === chore.name && t.username === currentUser.value.name);
-                    const todayStr = new Date().toLocaleDateString();
-                    const todayLog = logs.find(l => new Date(l.timestamp).toLocaleDateString() === todayStr);
-                    return todayLog ? todayLog.status : null;
+                const getChoreLock = (chore, isGlobal = false) => {
+                    if (!currentUser.value) return { isLocked: false };
+                    const now = new Date().getTime();
+                    const frequency = (chore.frequency || "Daily").toLowerCase().trim();
+                    const COOLDOWNS = { unlimited: 1000, daily: 86400000, weekly: 604800000 };
+                    const cooldown = COOLDOWNS[frequency] || COOLDOWNS.daily;
+                    
+                    const relevantLogs = taskLog.value.filter(t => 
+                        t.job === chore.name && (isGlobal ? t.username === currentUser.value.name : true)
+                    );
+                    
+                    const isPending = relevantLogs.some(t => t.status === 'Pending');
+                    if (isPending) return { isLocked: true, reason: 'Pending' };
+                    
+                    const latestApproval = Math.max(0, ...relevantLogs.filter(t => t.status === 'Approved').map(t => new Date(t.timestamp).getTime()));
+                    const isLocked = (now - latestApproval) < cooldown;
+                    
+                    if (isLocked) {
+                        const rem = cooldown - (now - latestApproval);
+                        const h = Math.floor(rem / 3600000);
+                        const m = Math.ceil((rem % 3600000) / 60000);
+                        return { isLocked: true, reason: 'Completed', timeLeft: h > 0 ? `${h}h` : `${m}m` };
+                    }
+                    return { isLocked: false };
+                };
+
+                const getChoreStatus = (chore, isGlobal = false) => {
+                    const lock = getChoreLock(chore, isGlobal);
+                    if (lock.reason === 'Pending') return 'Pending';
+                    if (lock.reason === 'Completed') return 'Approved';
+                    return null;
+                };
+
+                const getChoreButtonLabel = (chore, isGlobal = false) => {
+                    const lock = getChoreLock(chore, isGlobal);
+                    if (lock.reason === 'Pending') return 'Reviewing';
+                    if (lock.reason === 'Completed') return lock.timeLeft;
+                    return 'Finish';
                 };
 
                 const completeChore = async (chore) => {
@@ -305,7 +558,17 @@
                     try {
                         await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: chore.name, points: chore.basePoints, status: 'Pending' } }) });
                         await fetchData();
-                        showToast("Quest Sent!");
+                        showToast("Quest Logged!");
+                    } catch (e) { console.error(e); }
+                    loading.value = false;
+                };
+
+                const buyItem = async (item) => {
+                    loading.value = true;
+                    try {
+                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: `TREASURE: ${item.name}`, points: -Math.abs(item.cost), status: 'Pending' } }) });
+                        await fetchData();
+                        showToast("Wish Sent!");
                     } catch (e) { console.error(e); }
                     loading.value = false;
                 };
@@ -313,9 +576,20 @@
                 const approveTask = async (task) => {
                     loading.value = true;
                     try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', data: { ...task, userName: task.username, approvedBy: currentUser.value.name, status: 'Approved' } }) });
-                        await fetchData();
-                        showToast("Approved!");
+                        const response = await fetch(API_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ 
+                                action: 'updateStatus', 
+                                data: { 
+                                    ...task, 
+                                    userName: task.username, 
+                                    approvedBy: currentUser.value.name, 
+                                    status: 'Approved' 
+                                } 
+                            }) 
+                        });
+                        await fetchData(); // Critical: Force a fresh data pull
+                        showToast("Splendid!");
                     } catch (e) { console.error(e); }
                     loading.value = false;
                 };
@@ -323,9 +597,20 @@
                 const rejectTask = async (task) => {
                     loading.value = true;
                     try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', data: { ...task, userName: task.username, approvedBy: currentUser.value.name, status: 'Rejected' } }) });
+                        await fetch(API_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ 
+                                action: 'updateStatus', 
+                                data: { 
+                                    ...task, 
+                                    userName: task.username, 
+                                    approvedBy: currentUser.value.name, 
+                                    status: 'Rejected' 
+                                } 
+                            }) 
+                        });
                         await fetchData();
-                        showToast("Rejected!");
+                        showToast("Try Again!");
                     } catch (e) { console.error(e); }
                     loading.value = false;
                 };
@@ -342,9 +627,16 @@
                     loading.value = false;
                 };
 
+                const statusBadgeClass = (status) => {
+                    if (status === 'Pending') return 'status-pending';
+                    if (status === 'Approved') return 'status-approved';
+                    return '';
+                };
+
                 const showToast = (m) => { toast.value = m; setTimeout(() => toast.value = "", 3000); };
                 const getKidStats = (n) => users.value.find(u => u.name === n) || {};
                 const getKidLogs = (n) => taskLog.value.filter(l => l.username === n);
+                
                 const getTodayLog = (n) => {
                     const todayStr = new Date().toLocaleDateString();
                     return getKidLogs(n).filter(l => new Date(l.timestamp).toLocaleDateString() === todayStr);
@@ -354,10 +646,18 @@
                     const results = [];
                     const logs = getKidLogs(n).filter(l => l.status === 'Approved');
                     for (let i = 0; i < 5; i++) {
-                        const d = new Date(); d.setDate(d.getDate() - i);
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
                         const dStr = d.toLocaleDateString();
-                        const dailyTotal = logs.filter(l => new Date(l.timestamp).toLocaleDateString() === dStr).reduce((sum, curr) => sum + (curr.points || 0), 0);
-                        results.push({ label: i === 0 ? 'Today' : i === 1 ? 'Yest' : d.toLocaleDateString([], { weekday: 'short' }), total: dailyTotal, date: dStr });
+                        const dailyTotal = logs
+                            .filter(l => new Date(l.timestamp).toLocaleDateString() === dStr)
+                            .reduce((sum, curr) => sum + (curr.points || 0), 0);
+                        
+                        results.push({
+                            label: i === 0 ? 'Today' : i === 1 ? 'Yest' : d.toLocaleDateString([], { weekday: 'short' }),
+                            total: dailyTotal,
+                            date: dStr
+                        });
                     }
                     return results;
                 };
@@ -368,15 +668,12 @@
                     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 };
 
-                const statusBadgeClass = (s) => s === 'Pending' ? 'status-pending' : (s === 'Approved' ? 'status-approved' : 'text-red-400');
-                const getAvatarIcon = (u) => isParent(u) ? 'fas fa-user-shield' : 'fas fa-child';
-
                 return {
-                    loading, currentUser, users, chores, taskLog, toast, parentViewKid, manualAdjust,
+                    loading, currentUser, users, chores, storeItems, taskLog, toast, parentViewKid, childView, manualAdjust,
                     selectUser, logout, kids: computed(() => users.value.filter(u => !isParent(u))),
-                    isParent, assignedChores, pendingTasks: computed(() => taskLog.value.filter(t => t.status === 'Pending')),
-                    completeChore, approveTask, rejectTask, getKidStats, getChoreStatus, submitManualAdjust,
-                    statusBadgeClass, fetchData, getAvatarIcon, getKidLogs, getTodayLog, getFiveDaySummary, formatDate
+                    isParent, assignedChores, availableOpenChores, pendingTasks: computed(() => taskLog.value.filter(t => t.status === 'Pending')),
+                    completeChore, buyItem, approveTask, rejectTask, submitManualAdjust, getKidStats, getChoreStatus, getChoreButtonLabel, 
+                    getChoreLock, statusBadgeClass, fetchData, getAvatarIcon, getKidLogs, getTodayLog, getFiveDaySummary, formatDate
                 };
             }
         }).mount('#app');
