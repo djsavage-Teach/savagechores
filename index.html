@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Magic Kingdom Chore Quests</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -23,6 +23,7 @@
             background-color: var(--ms-cream);
             background-image: url('https://www.transparenttextures.com/patterns/pinstriped-suit.png');
             color: var(--ms-dark);
+            -webkit-tap-highlight-color: transparent;
         }
 
         .header-font { font-family: 'Cinzel', serif; }
@@ -31,8 +32,8 @@
             background: white;
             border: 1px solid #e2e8f0;
             border-bottom: 4px solid var(--ms-gold);
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             overflow: hidden;
         }
 
@@ -46,7 +47,7 @@
         .btn-magic {
             background: linear-gradient(135deg, var(--ms-brick) 0%, #8e3a3a 100%) !important;
             color: white !important;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             font-weight: 700;
@@ -55,6 +56,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
 
         .btn-magic:hover:not(:disabled) {
@@ -89,7 +91,7 @@
         .loading-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(249, 246, 240, 0.9);
+            background: rgba(249, 246, 240, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -97,14 +99,21 @@
         }
 
         .status-pill {
-            font-size: 0.7rem;
-            padding: 2px 8px;
+            font-size: 0.65rem;
+            padding: 2px 10px;
             border-radius: 999px;
             text-transform: uppercase;
             font-weight: 800;
         }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-approved { background: #d4edda; color: #155724; }
+
+        /* Mobile specific spacing */
+        @media (max-width: 640px) {
+            .mobile-grid { grid-template-columns: 1fr; }
+            .mobile-padding { padding: 1rem; }
+            .mobile-header-text { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body class="min-h-screen pb-12">
@@ -116,92 +125,94 @@
     <div id="app">
         <!-- Loading Overlay -->
         <div v-if="loading" class="loading-overlay">
-            <div class="text-center">
-                <i class="fas fa-cog fa-spin text-5xl mb-4" style="color: var(--ms-blue)"></i>
-                <p class="header-font text-2xl" style="color: var(--ms-brick)">Entering Main Street...</p>
+            <div class="text-center px-4">
+                <i class="fas fa-train fa-spin text-5xl mb-4" style="color: var(--ms-blue)"></i>
+                <p class="header-font text-xl md:text-2xl" style="color: var(--ms-brick)">Entering Main Street...</p>
             </div>
         </div>
 
-        <header class="text-white p-4 shadow-xl sticky top-0 z-40">
+        <header class="text-white p-3 md:p-4 shadow-xl sticky top-0 z-40">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
-                <div class="flex items-center space-x-3 cursor-pointer" @click="fetchData">
-                    <i class="fas fa-train text-white text-3xl"></i>
-                    <h1 class="header-font text-xl md:text-2xl tracking-widest uppercase">Magic Kingdom</h1>
+                <div class="flex items-center space-x-2 md:space-x-3 cursor-pointer" @click="fetchData">
+                    <i class="fas fa-train text-white text-2xl md:text-3xl"></i>
+                    <h1 class="header-font text-lg md:text-2xl tracking-widest uppercase">Magic Kingdom</h1>
                 </div>
-                <div v-if="currentUser" class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-[10px] uppercase font-bold text-gray-200 tracking-widest">Resident</p>
+                <div v-if="currentUser" class="flex items-center space-x-3 md:space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-[10px] uppercase font-bold text-gray-200 tracking-widest leading-none mb-1">Resident</p>
                         <p class="font-bold leading-none">{{ currentUser.name }}</p>
                     </div>
-                    <button @click="logout" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition"><i class="fas fa-sign-out-alt"></i></button>
+                    <button @click="logout" class="bg-white/20 hover:bg-white/30 p-2.5 rounded-full transition active:scale-95">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto p-4 mt-6">
+        <main class="max-w-6xl mx-auto px-4 py-6">
             <!-- LOGIN SCREEN -->
-            <div v-if="!currentUser" class="text-center py-12">
-                <h2 class="header-font text-4xl mb-2 uppercase tracking-tighter" style="color: var(--ms-brick)">Who Approaches?</h2>
-                <p class="text-gray-500 italic mb-12">Welcome to the Exposition Park</p>
+            <div v-if="!currentUser" class="text-center py-6 md:py-12">
+                <h2 class="header-font text-3xl md:text-4xl mb-2 uppercase tracking-tighter" style="color: var(--ms-brick)">Who Approaches?</h2>
+                <p class="text-gray-500 italic mb-8 md:mb-12 text-sm md:text-base">Welcome to the Exposition Park</p>
                 
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                     <div v-for="user in users" :key="user.name" @click="selectUser(user)"
-                         class="card-disney p-8 cursor-pointer transform hover:-translate-y-2 transition duration-300 group">
-                        <div class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl transition ms-bg-sage text-white">
+                         class="card-disney p-4 md:p-8 cursor-pointer transform active:scale-95 md:hover:-translate-y-2 transition duration-300 group">
+                        <div class="w-14 h-14 md:w-20 md:h-20 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center text-2xl md:text-3xl transition ms-bg-sage text-white shadow-inner">
                             <i :class="getAvatarIcon(user)"></i>
                         </div>
-                        <h3 class="header-font text-xl" style="color: var(--ms-dark)">{{ user.name }}</h3>
-                        <p class="text-[10px] font-bold uppercase text-gray-400 mt-1 tracking-widest">{{ user.role }}</p>
+                        <h3 class="header-font text-base md:text-xl truncate" style="color: var(--ms-dark)">{{ user.name }}</h3>
+                        <p class="text-[9px] md:text-[10px] font-bold uppercase text-gray-400 mt-1 tracking-widest">{{ user.role }}</p>
                     </div>
                 </div>
             </div>
 
             <div v-else>
                 <!-- CHILD VIEW -->
-                <div v-if="!isParent(currentUser)" class="space-y-8">
-                    <div class="flex space-x-8 border-b border-gray-300">
-                        <button @click="childView = 'quests'" :class="childView === 'quests' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-xs transition-all">Main Attractions</button>
-                        <button @click="childView = 'bazaar'" :class="childView === 'bazaar' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-xs transition-all">Gift Shop</button>
+                <div v-if="!isParent(currentUser)" class="space-y-6 md:space-y-8">
+                    <div class="flex space-x-6 md:space-x-8 border-b border-gray-300 overflow-x-auto no-scrollbar">
+                        <button @click="childView = 'quests'" :class="childView === 'quests' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-[10px] md:text-xs transition-all whitespace-nowrap">Main Attractions</button>
+                        <button @click="childView = 'bazaar'" :class="childView === 'bazaar' ? 'nav-btn-active' : 'text-gray-400'" class="pb-3 font-bold uppercase tracking-widest text-[10px] md:text-xs transition-all whitespace-nowrap">Gift Shop</button>
                     </div>
 
-                    <div v-if="childView === 'quests'" class="space-y-8">
+                    <div v-if="childView === 'quests'" class="space-y-6 md:space-y-8">
                         <!-- Stat Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="card-disney p-6 flex items-center space-x-4">
-                                <div class="p-4 rounded-lg ms-bg-sage text-white"><i class="fas fa-coins text-2xl"></i></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4">
+                                <div class="p-3 md:p-4 rounded-lg ms-bg-sage text-white"><i class="fas fa-coins text-xl md:text-2xl"></i></div>
                                 <div>
-                                    <p class="text-xs font-bold text-gray-400 uppercase">Treasure</p>
-                                    <p class="text-3xl font-black" style="color: var(--ms-brick)">{{ currentUser.points || 0 }} <span class="text-xs">pts</span></p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Treasure</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--ms-brick)">{{ currentUser.points || 0 }} <span class="text-xs">pts</span></p>
                                 </div>
                             </div>
-                            <div class="card-disney p-6 flex items-center space-x-4">
-                                <div class="p-4 rounded-lg" style="background: var(--ms-blue); color: white;"><i class="fas fa-award text-2xl"></i></div>
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4">
+                                <div class="p-3 md:p-4 rounded-lg" style="background: var(--ms-blue); color: white;"><i class="fas fa-award text-xl md:text-2xl"></i></div>
                                 <div>
-                                    <p class="text-xs font-bold text-gray-400 uppercase">Level</p>
-                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.level || 1 }}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Level</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.level || 1 }}</p>
                                 </div>
                             </div>
-                            <div class="card-disney p-6 flex items-center space-x-4">
-                                <div class="p-4 rounded-lg" style="background: var(--ms-gold); color: white;"><i class="fas fa-calendar-check text-2xl"></i></div>
+                            <div class="card-disney p-4 md:p-6 flex items-center space-x-4">
+                                <div class="p-3 md:p-4 rounded-lg" style="background: var(--ms-gold); color: white;"><i class="fas fa-calendar-check text-xl md:text-2xl"></i></div>
                                 <div>
-                                    <p class="text-xs font-bold text-gray-400 uppercase">Streak</p>
-                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.streak || 0 }}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Streak</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--ms-dark)">{{ currentUser.streak || 0 }}</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- CHORE SECTIONS -->
                         <section>
-                            <h2 class="header-font text-2xl mb-6 flex items-center" style="color: var(--ms-brick)">
+                            <h2 class="header-font text-xl md:text-2xl mb-4 md:mb-6 flex items-center px-1" style="color: var(--ms-brick)">
                                 <i class="fas fa-map-marked-alt mr-3"></i> Main Attractions
                             </h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div v-for="chore in assignedChores" :key="chore.name" 
-                                     class="card-disney p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 ms-border-sage">
-                                    <div class="text-center sm:text-left">
-                                        <h4 class="font-bold text-lg uppercase tracking-tight" style="color: var(--ms-dark)">{{ chore.name }}</h4>
+                                     class="card-disney p-4 md:p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 ms-border-sage">
+                                    <div class="text-center sm:text-left mb-4 sm:mb-0 w-full sm:w-auto">
+                                        <h4 class="font-bold text-base md:text-lg uppercase tracking-tight" style="color: var(--ms-dark)">{{ chore.name }}</h4>
                                         <div class="flex items-center justify-center sm:justify-start space-x-2 mt-1">
-                                            <span class="text-[10px] px-2 py-0.5 rounded font-black tracking-widest ms-bg-sage text-white">+{{ chore.basePoints || 0 }} PTS</span>
+                                            <span class="text-[9px] px-2 py-0.5 rounded font-black tracking-widest ms-bg-sage text-white">+{{ chore.basePoints || 0 }} PTS</span>
                                             <span v-if="getChoreStatus(chore)" :class="statusBadgeClass(getChoreStatus(chore))" class="status-pill">
                                                 {{ getChoreStatus(chore) }}
                                             </span>
@@ -209,7 +220,7 @@
                                     </div>
                                     <button @click="completeChore(chore)" 
                                             :disabled="getChoreLock(chore).isLocked"
-                                            class="btn-magic px-10 py-3 rounded text-sm min-w-[140px]">
+                                            class="btn-magic px-8 md:px-10 py-3 rounded text-sm w-full sm:w-auto min-w-[140px]">
                                         {{ getChoreButtonLabel(chore) }}
                                     </button>
                                 </div>
@@ -217,23 +228,23 @@
                         </section>
 
                         <section>
-                            <h2 class="header-font text-2xl mb-6 flex items-center" style="color: var(--ms-blue)">
+                            <h2 class="header-font text-xl md:text-2xl mb-4 md:mb-6 flex items-center px-1" style="color: var(--ms-blue)">
                                 <i class="fas fa-ticket-alt mr-3"></i> C-Ticket Items
                             </h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <div v-for="chore in availableOpenChores" :key="chore.name" 
-                                     class="card-disney p-5 flex flex-col justify-between h-full">
-                                    <h4 class="font-bold uppercase text-sm mb-4" style="color: var(--ms-dark)">{{ chore.name }}</h4>
+                                     class="card-disney p-4 md:p-5 flex flex-col justify-between h-full">
+                                    <h4 class="font-bold uppercase text-xs md:text-sm mb-4 leading-tight" style="color: var(--ms-dark)">{{ chore.name }}</h4>
                                     <div class="flex flex-col space-y-3">
                                         <div class="flex justify-between items-center">
-                                            <span class="font-black text-sm" style="color: var(--ms-blue)">{{ chore.basePoints || 0 }} PTS</span>
+                                            <span class="font-black text-xs md:text-sm" style="color: var(--ms-blue)">{{ chore.basePoints || 0 }} PTS</span>
                                             <span v-if="getChoreStatus(chore, true)" :class="statusBadgeClass(getChoreStatus(chore, true))" class="status-pill">
                                                 {{ getChoreStatus(chore, true) }}
                                             </span>
                                         </div>
                                         <button @click="completeChore(chore)" 
                                                 :disabled="getChoreLock(chore, true).isLocked"
-                                                class="btn-magic w-full py-2 rounded text-xs">
+                                                class="btn-magic w-full py-2.5 rounded text-[10px] md:text-xs">
                                             {{ getChoreButtonLabel(chore, true) }}
                                         </button>
                                     </div>
@@ -243,20 +254,20 @@
                     </div>
 
                     <!-- GIFT SHOP VIEW -->
-                    <div v-if="childView === 'bazaar'" class="space-y-8">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-if="childView === 'bazaar'" class="space-y-6 md:space-y-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                             <div v-for="item in storeItems" :key="item.name" class="card-disney flex flex-col justify-between hover:shadow-xl transition">
-                                <div class="h-40 bg-gray-100 flex items-center justify-center">
+                                <div class="h-40 md:h-48 bg-gray-100 flex items-center justify-center">
                                     <img v-if="item.image" :src="item.image" class="w-full h-full object-cover">
                                     <i v-else class="fas fa-gift text-4xl text-gray-300"></i>
                                 </div>
-                                <div class="p-5">
-                                    <h4 class="header-font text-lg uppercase" style="color: var(--ms-dark)">{{ item.name }}</h4>
+                                <div class="p-4 md:p-5">
+                                    <h4 class="header-font text-base md:text-lg uppercase truncate" style="color: var(--ms-dark)">{{ item.name }}</h4>
                                     <div class="mt-4 flex items-center justify-between">
-                                        <span class="font-black text-xl" style="color: var(--ms-brick)">{{ item.cost }} <i class="fas fa-coins text-yellow-600"></i></span>
+                                        <span class="font-black text-lg md:text-xl" style="color: var(--ms-brick)">{{ item.cost }} <i class="fas fa-coins text-yellow-600"></i></span>
                                         <button @click="buyItem(item)" 
                                                 :disabled="currentUser.points < item.cost"
-                                                class="btn-magic px-6 py-2 rounded text-xs">
+                                                class="btn-magic px-6 py-2 rounded text-[10px] md:text-xs">
                                             Buy
                                         </button>
                                     </div>
@@ -267,32 +278,32 @@
                 </div>
 
                 <!-- PARENT VIEW -->
-                <div v-else class="space-y-8">
+                <div v-else class="space-y-6 md:space-y-8">
                     <!-- Parent Nav -->
-                    <div class="flex flex-wrap gap-4 border-b border-gray-300">
+                    <div class="flex space-x-2 md:space-x-4 border-b border-gray-300 overflow-x-auto no-scrollbar pb-1">
                         <button v-for="kid in kids" @click="parentViewKid = kid.name"
                                 :class="parentViewKid === kid.name ? 'nav-btn-active font-black' : 'text-gray-400 font-bold'"
-                                class="px-4 py-3 transition text-xs uppercase tracking-widest">{{ kid.name }}</button>
+                                class="px-3 md:px-4 py-3 transition text-[10px] md:text-xs uppercase tracking-widest whitespace-nowrap">{{ kid.name }}</button>
                         <button @click="parentViewKid = 'Approvals'"
                                 :class="parentViewKid === 'Approvals' ? 'nav-btn-active font-black' : 'text-gray-400 font-bold'"
-                                class="px-4 py-3 transition text-xs uppercase tracking-widest relative">
-                            Approvals <span v-if="pendingTasks.length > 0" class="ml-2 bg-red-600 text-white text-[10px] px-1.5 rounded-full">{{ pendingTasks.length }}</span>
+                                class="px-3 md:px-4 py-3 transition text-[10px] md:text-xs uppercase tracking-widest relative whitespace-nowrap">
+                            Approvals <span v-if="pendingTasks.length > 0" class="ml-1 md:ml-2 bg-red-600 text-white text-[9px] md:text-[10px] px-1.5 rounded-full">{{ pendingTasks.length }}</span>
                         </button>
                     </div>
 
                     <!-- Approvals Queue -->
                     <div v-if="parentViewKid === 'Approvals'" class="space-y-4">
-                        <h3 class="header-font text-xl uppercase" style="color: var(--ms-brick)">Awaiting Royal Approval</h3>
+                        <h3 class="header-font text-lg md:text-xl uppercase px-1" style="color: var(--ms-brick)">Awaiting Royal Approval</h3>
                         <div v-if="pendingTasks.length === 0" class="p-12 text-center text-gray-400 italic">Everything is in order, Mayor.</div>
-                        <div v-for="task in pendingTasks" :key="task.timestamp" class="card-disney p-5 flex justify-between items-center bg-white border-l-8 ms-border-sage">
-                            <div>
-                                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white" style="background: var(--ms-blue)">{{ task.username }}</span>
-                                <h4 class="font-bold text-xl mt-1 uppercase" style="color: var(--ms-dark)">{{ task.job }}</h4>
+                        <div v-for="task in pendingTasks" :key="task.timestamp" class="card-disney p-4 md:p-5 flex flex-col sm:flex-row justify-between items-center bg-white border-l-8 ms-border-sage gap-4">
+                            <div class="w-full text-center sm:text-left">
+                                <span class="text-[9px] md:text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white" style="background: var(--ms-blue)">{{ task.username }}</span>
+                                <h4 class="font-bold text-lg md:text-xl mt-1 uppercase leading-tight" style="color: var(--ms-dark)">{{ task.job }}</h4>
                                 <p class="text-xs text-gray-500 italic">{{ task.points }} points</p>
                             </div>
-                            <div class="flex space-x-2">
-                                <button @click="approveTask(task)" class="bg-green-700 text-white px-6 py-2 rounded font-bold uppercase text-xs">Approve</button>
-                                <button @click="rejectTask(task)" class="bg-gray-100 text-gray-600 px-4 py-2 rounded font-bold uppercase text-xs">Deny</button>
+                            <div class="flex space-x-2 w-full sm:w-auto">
+                                <button @click="approveTask(task)" class="bg-green-700 text-white flex-1 sm:flex-none px-6 py-3 rounded font-bold uppercase text-[10px] md:text-xs shadow-md active:scale-95">Approve</button>
+                                <button @click="rejectTask(task)" class="bg-gray-100 text-gray-600 flex-1 sm:flex-none px-4 py-3 rounded font-bold uppercase text-[10px] md:text-xs border border-gray-200 active:scale-95">Deny</button>
                             </div>
                         </div>
                     </div>
@@ -300,19 +311,19 @@
                     <!-- CHILD DASHBOARD -->
                     <div v-else class="space-y-6">
                         <!-- Profile Header -->
-                        <div class="card-disney p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="card-disney p-6 md:p-8 bg-white flex flex-col md:flex-row justify-between items-center gap-6">
                             <div class="text-center md:text-left">
-                                <h2 class="header-font text-4xl uppercase" style="color: var(--ms-brick)">{{ parentViewKid }}</h2>
-                                <p class="text-2xl font-black mt-2 uppercase" style="color: var(--ms-blue)">{{ getKidStats(parentViewKid).points || 0 }} Treasure Points</p>
+                                <h2 class="header-font text-3xl md:text-4xl uppercase" style="color: var(--ms-brick)">{{ parentViewKid }}</h2>
+                                <p class="text-xl md:text-2xl font-black mt-2 uppercase" style="color: var(--ms-blue)">{{ getKidStats(parentViewKid).points || 0 }} Treasure Points</p>
                             </div>
                             <div class="flex items-center space-x-8">
                                 <div class="text-center">
                                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Level</p>
-                                    <p class="text-3xl font-black" style="color: var(--ms-dark)">{{ getKidStats(parentViewKid).level || 1 }}</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--ms-dark)">{{ getKidStats(parentViewKid).level || 1 }}</p>
                                 </div>
                                 <div class="text-center">
                                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Streak</p>
-                                    <p class="text-3xl font-black" style="color: var(--ms-gold)">{{ getKidStats(parentViewKid).streak || 0 }}</p>
+                                    <p class="text-2xl md:text-3xl font-black" style="color: var(--ms-gold)">{{ getKidStats(parentViewKid).streak || 0 }}</p>
                                 </div>
                             </div>
                         </div>
@@ -321,21 +332,23 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- TODAY CARD -->
                             <div class="card-disney">
-                                <div class="p-4 border-b border-gray-100 bg-gray-50">
-                                    <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-brick)">Today's Progress</h3>
+                                <div class="p-3 md:p-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="header-font text-[11px] md:text-sm uppercase font-bold" style="color: var(--ms-brick)">Today's Progress</h3>
                                 </div>
-                                <div class="p-4 h-[240px] overflow-y-auto">
+                                <div class="p-4 h-[200px] md:h-[240px] overflow-y-auto">
                                     <div v-if="getTodayLog(parentViewKid).length === 0" class="h-full flex items-center justify-center text-gray-400 italic text-sm">
                                         No entries yet today.
                                     </div>
                                     <div v-else class="space-y-3">
-                                        <div v-for="log in getTodayLog(parentViewKid)" :key="log.timestamp" class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
-                                            <div>
-                                                <p class="font-bold uppercase text-[10px] leading-tight">{{ log.job }}</p>
-                                                <p class="text-[9px] text-gray-400">{{ formatDate(log.timestamp, true) }}</p>
+                                        <div v-for="log in getTodayLog(parentViewKid)" :key="log.timestamp" class="flex justify-between items-center text-xs md:text-sm border-b border-gray-50 pb-2">
+                                            <div class="pr-2">
+                                                <p class="font-bold uppercase text-[9px] md:text-[10px] leading-tight">{{ log.job }}</p>
+                                                <p class="text-[8px] md:text-[9px] text-gray-400">{{ formatDate(log.timestamp, true) }}</p>
                                             </div>
-                                            <div class="text-right">
-                                                <span :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black">+{{ log.points }}</span>
+                                            <div class="text-right whitespace-nowrap">
+                                                <span :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black text-[11px] md:text-xs">
+                                                    {{ log.points >= 0 ? '+' : '' }}{{ log.points }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -344,17 +357,17 @@
 
                             <!-- 5 DAY HISTORY CARD -->
                             <div class="card-disney">
-                                <div class="p-4 border-b border-gray-100 bg-gray-50">
-                                    <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-blue)">5-Day Summary</h3>
+                                <div class="p-3 md:p-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="header-font text-[11px] md:text-sm uppercase font-bold" style="color: var(--ms-blue)">5-Day Summary</h3>
                                 </div>
-                                <div class="p-4 h-[240px]">
-                                    <div class="space-y-3">
+                                <div class="p-4 h-[200px] md:h-[240px]">
+                                    <div class="space-y-4">
                                         <div v-for="day in getFiveDaySummary(parentViewKid)" :key="day.date" class="flex justify-between items-center">
-                                            <span class="text-xs font-bold uppercase text-gray-500">{{ day.label }}</span>
-                                            <div class="flex-1 mx-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                <div class="h-full ms-bg-sage" :style="{ width: Math.min(100, (day.total / 10) * 100) + '%' }"></div>
+                                            <span class="text-[10px] md:text-xs font-bold uppercase text-gray-500 w-10">{{ day.label }}</span>
+                                            <div class="flex-1 mx-3 md:mx-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                <div class="h-full ms-bg-sage transition-all duration-500" :style="{ width: Math.min(100, (day.total / 10) * 100) + '%' }"></div>
                                             </div>
-                                            <span class="text-xs font-black" style="color: var(--ms-dark)">{{ day.total }} pts</span>
+                                            <span class="text-[10px] md:text-xs font-black w-12 text-right" style="color: var(--ms-dark)">{{ day.total }} <span class="text-[8px] font-normal">pts</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -362,31 +375,31 @@
                         </div>
                         
                         <!-- Manual Adjust -->
-                        <div class="card-disney p-6">
-                            <h3 class="header-font text-lg mb-4 uppercase" style="color: var(--ms-blue)">Royal Decree (Manual Adjust)</h3>
-                            <div class="flex flex-col md:flex-row gap-4">
-                                <input type="number" v-model="manualAdjust.amount" placeholder="Points" class="flex-1 p-3 rounded border border-gray-300 outline-none focus:border-blue-400">
-                                <input type="text" v-model="manualAdjust.reason" placeholder="Reason for adjustment" class="flex-[2] p-3 rounded border border-gray-300 outline-none focus:border-blue-400">
-                                <button @click="submitManualAdjust" class="btn-magic px-8 py-3 rounded">Execute</button>
+                        <div class="card-disney p-5 md:p-6">
+                            <h3 class="header-font text-base md:text-lg mb-4 uppercase" style="color: var(--ms-blue)">Royal Decree (Manual Adjust)</h3>
+                            <div class="flex flex-col md:flex-row gap-3 md:gap-4">
+                                <input type="number" v-model="manualAdjust.amount" placeholder="Points" class="w-full md:flex-1 p-3 rounded-lg border border-gray-300 outline-none focus:border-blue-400 text-sm">
+                                <input type="text" v-model="manualAdjust.reason" placeholder="Reason for adjustment" class="w-full md:flex-[2] p-3 rounded-lg border border-gray-300 outline-none focus:border-blue-400 text-sm">
+                                <button @click="submitManualAdjust" class="btn-magic px-8 py-3 rounded-lg w-full md:w-auto active:scale-95">Execute</button>
                             </div>
                         </div>
 
                         <!-- Activity History (Full) -->
                         <div class="card-disney">
-                            <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                                <h3 class="header-font text-sm uppercase font-bold" style="color: var(--ms-dark)">Full Activity History</h3>
+                            <div class="p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                                <h3 class="header-font text-[11px] md:text-sm uppercase font-bold" style="color: var(--ms-dark)">Full Activity History</h3>
                             </div>
-                            <div class="max-h-[300px] overflow-y-auto text-sm">
-                                <div v-for="log in getKidLogs(parentViewKid)" :key="log.timestamp" class="p-4 border-b border-gray-50 flex justify-between items-center hover:bg-gray-50 transition">
-                                    <div>
-                                        <p class="font-bold text-[11px] uppercase tracking-tight">{{ log.job }}</p>
-                                        <p class="text-[10px] text-gray-400">{{ formatDate(log.timestamp) }}</p>
+                            <div class="max-h-[300px] overflow-y-auto text-xs md:text-sm">
+                                <div v-for="log in getKidLogs(parentViewKid)" :key="log.timestamp" class="p-3 md:p-4 border-b border-gray-50 flex justify-between items-center hover:bg-gray-50 transition">
+                                    <div class="pr-2">
+                                        <p class="font-bold text-[10px] md:text-[11px] uppercase tracking-tight leading-tight">{{ log.job }}</p>
+                                        <p class="text-[9px] md:text-[10px] text-gray-400 mt-0.5">{{ formatDate(log.timestamp) }}</p>
                                     </div>
-                                    <div class="text-right">
-                                        <p :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black">
+                                    <div class="text-right whitespace-nowrap">
+                                        <p :class="log.points >= 0 ? 'text-green-600' : 'text-red-600'" class="font-black text-[12px] md:text-sm leading-none mb-1">
                                             {{ log.points >= 0 ? '+' : '' }}{{ log.points }}
                                         </p>
-                                        <span :class="statusBadgeClass(log.status)" class="status-pill">{{ log.status }}</span>
+                                        <span :class="statusBadgeClass(log.status)" class="status-pill text-[8px] md:text-[9px]">{{ log.status }}</span>
                                     </div>
                                 </div>
                                 <div v-if="getKidLogs(parentViewKid).length === 0" class="p-12 text-center text-gray-300 italic">No history found.</div>
@@ -397,9 +410,12 @@
             </div>
         </main>
 
-        <!-- Toast -->
-        <div v-if="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white text-gray-800 px-8 py-4 rounded shadow-2xl z-50 border-t-4 ms-border-sage animate-pulse">
-            <span class="header-font uppercase tracking-widest text-sm" style="color: var(--ms-brick)">{{ toast }}</span>
+        <!-- Toast Notification -->
+        <div v-if="toast" class="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white text-gray-800 px-6 py-4 rounded-xl shadow-2xl z-50 border-t-4 ms-border-sage transform transition-all duration-300 animate-bounce">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-magic text-yellow-500"></i>
+                <span class="header-font uppercase tracking-widest text-[10px] md:text-sm font-bold" style="color: var(--ms-brick)">{{ toast }}</span>
+            </div>
         </div>
     </div>
 
