@@ -478,7 +478,6 @@
                 const getAvatarIcon = (user) => {
                     if (isParent(user)) return 'fas fa-globe';
                     const name = (user.name || '').toLowerCase();
-                    if (name.includes('dj')) return 'fas fa-child';
                     if (name.includes('alexsi')) return 'fas fa-star';
                     if (name.includes('mia')) return 'fas fa-heart';
                     if (name.includes('pyper')) return 'fas fa-feather';
