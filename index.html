@@ -543,18 +543,17 @@
                     const frequency = (chore.frequency || "Daily").toLowerCase().trim();
                     
                     // Specific Cooldown Durations
-                    // Unlimited is now explicitly 2 hours for everyone
                     const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
-                    const DAILY_MS = 24 * 60 * 60 * 1000;
+                    const SIXTEEN_HOURS_MS = 16 * 60 * 60 * 1000; // Updated from 24h to 16h
                     const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
                     
                     const COOLDOWNS = { 
                         unlimited: TWO_HOURS_MS, 
-                        daily: DAILY_MS, 
+                        daily: SIXTEEN_HOURS_MS, 
                         weekly: WEEKLY_MS 
                     };
                     
-                    const cooldown = COOLDOWNS[frequency] || DAILY_MS;
+                    const cooldown = COOLDOWNS[frequency] || SIXTEEN_HOURS_MS;
                     
                     // Filter logs for this specific job across all users
                     const relevantLogs = taskLog.value.filter(t => t.job === chore.name);
