@@ -116,17 +116,6 @@
         .status-pending { background: var(--sw-gold); color: #856404; }
         .status-approved { background: var(--sw-mint); color: #155724; }
 
-        .clock-spinner {
-            font-size: 4rem;
-            color: var(--sw-gold);
-            animation: clock-wobble 2s infinite ease-in-out;
-        }
-
-        @keyframes clock-wobble {
-            0%, 100% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
-        }
-
         @media (max-width: 640px) {
             .mobile-grid { grid-template-columns: 1fr; }
             .mobile-padding { padding: 1rem; }
@@ -141,12 +130,14 @@
     </script>
 
     <div id="app">
-        <!-- Loading Overlay (Initial Load only) -->
+        <!-- Improved Loading Overlay -->
         <div v-if="loading" class="loading-overlay">
             <div class="text-center px-4">
-                <i class="fas fa-clock clock-spinner mb-4"></i>
-                <p class="header-font text-xl md:text-2xl" style="color: var(--sw-blue)">Setting the stage...</p>
-                <p class="text-xs uppercase tracking-widest mt-2 text-gray-400">It's a small world after all</p>
+                <div class="mb-8 mx-auto w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-8 border-sw-blue shadow-2xl">
+                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcXZobmNraWxtNXBrZDZxaDloejFqZmN4NXMxc3NqcnJzYjRuNG5sbSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Xtij9YYM3NLYk/giphy.gif" alt="Mickey" class="w-full h-full object-cover">
+                </div>
+                <p class="header-font text-3xl md:text-5xl uppercase tracking-wider" style="color: var(--sw-blue)">I'M WORKING ON IT</p>
+                <p class="text-[10px] md:text-xs uppercase tracking-[0.3em] mt-6 text-gray-300">Magic in progress...</p>
             </div>
         </div>
 
@@ -161,15 +152,13 @@
                         <p class="text-[10px] uppercase font-bold text-white/80 tracking-widest leading-none mb-1">Explorer</p>
                         <p class="font-bold leading-none">{{ currentUser.name }}</p>
                     </div>
-                    <!-- New Refresh Button -->
                     <button @click="fetchData" class="bg-white/30 hover:bg-white/40 p-2.5 rounded-full transition active:rotate-180 duration-500">
-                        <i class="fas fa-sync-alt" :class="{'animate-spin': submitting}"></i>
+                        <i class="fas fa-sync-alt" :class="{'animate-spin': submitting || loading}"></i>
                     </button>
                     <button @click="logout" class="bg-white/30 hover:bg-white/40 p-2.5 rounded-full transition active:scale-95">
                         <i class="fas fa-home"></i>
                     </button>
                 </div>
-                <!-- Refresh Button for Login Screen -->
                 <div v-else>
                     <button @click="fetchData" class="bg-white/30 hover:bg-white/40 p-2.5 rounded-full transition active:rotate-180 duration-500">
                         <i class="fas fa-sync-alt" :class="{'animate-spin': loading}"></i>
@@ -273,18 +262,18 @@
                                     <div class="flex flex-col space-y-3">
                                         <div class="flex justify-between items-center">
                                             <span class="font-black text-xs md:text-sm" style="color: var(--sw-lavender)">{{ chore.basePoints || 0 }} PTS</span>
-                                            <span v-if="getChoreStatus(chore, true)" :class="statusBadgeClass(getChoreStatus(chore, true))" class="status-pill">
-                                                {{ getChoreStatus(chore, true) }}
+                                            <span v-if="getChoreStatus(chore)" :class="statusBadgeClass(getChoreStatus(chore))" class="status-pill">
+                                                {{ getChoreStatus(chore) }}
                                             </span>
                                         </div>
                                         <button @click="completeChore(chore)" 
-                                                :disabled="getChoreLock(chore, true).isLocked || submitting"
+                                                :disabled="getChoreLock(chore).isLocked || submitting"
                                                 class="btn-magic w-full py-2.5 rounded-full text-[10px] md:text-xs">
                                             <template v-if="submitting === chore.name">
                                                 <i class="fas fa-circle-notch animate-spin mr-2"></i> Magic...
                                             </template>
                                             <template v-else>
-                                                {{ getChoreButtonLabel(chore, true) }}
+                                                {{ getChoreButtonLabel(chore) }}
                                             </template>
                                         </button>
                                     </div>
@@ -475,7 +464,7 @@
         createApp({
             setup() {
                 const loading = ref(true);
-                const submitting = ref(null); // Track specific submission state
+                const submitting = ref(null); 
                 const currentUser = ref(null);
                 const users = ref([]);
                 const chores = ref([]);
@@ -500,19 +489,25 @@
                 };
 
                 const fetchData = async () => {
-                    // Only show full overlay on first load
-                    const res = await fetch(API_URL + "?action=getData");
-                    const data = await res.json();
-                    users.value = data.users || [];
-                    chores.value = data.chores || [];
-                    taskLog.value = (data.taskLog || []).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    storeItems.value = data.storeItems || [];
+                    loading.value = true;
+                    try {
+                        const res = await fetch(API_URL + "?action=getData");
+                        const data = await res.json();
+                        users.value = data.users || [];
+                        chores.value = data.chores || [];
+                        taskLog.value = (data.taskLog || []).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        storeItems.value = data.storeItems || [];
 
-                    if (currentUser.value) {
-                        const updated = users.value.find(u => u.name === currentUser.value.name);
-                        if (updated) currentUser.value = updated;
+                        if (currentUser.value) {
+                            const updated = users.value.find(u => u.name === currentUser.value.name);
+                            if (updated) currentUser.value = updated;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showToast("Connection Lost");
+                    } finally {
+                        setTimeout(() => { loading.value = false; }, 800);
                     }
-                    loading.value = false;
                 };
 
                 onMounted(fetchData);
@@ -543,41 +538,65 @@
                     return chores.value.filter(c => (c.assignedTo || "").toLowerCase().trim() === "open");
                 });
 
-                const getChoreLock = (chore, isGlobal = false) => {
-                    if (!currentUser.value) return { isLocked: false };
+                const getChoreLock = (chore) => {
                     const now = new Date().getTime();
                     const frequency = (chore.frequency || "Daily").toLowerCase().trim();
-                    const COOLDOWNS = { unlimited: 1000, daily: 86400000, weekly: 604800000 };
-                    const cooldown = COOLDOWNS[frequency] || COOLDOWNS.daily;
                     
-                    const relevantLogs = taskLog.value.filter(t => 
-                        t.job === chore.name && (isGlobal ? t.username === currentUser.value.name : true)
-                    );
+                    // Specific Cooldown Durations
+                    // Unlimited is now explicitly 2 hours for everyone
+                    const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+                    const DAILY_MS = 24 * 60 * 60 * 1000;
+                    const WEEKLY_MS = 7 * 24 * 60 * 60 * 1000;
                     
+                    const COOLDOWNS = { 
+                        unlimited: TWO_HOURS_MS, 
+                        daily: DAILY_MS, 
+                        weekly: WEEKLY_MS 
+                    };
+                    
+                    const cooldown = COOLDOWNS[frequency] || DAILY_MS;
+                    
+                    // Filter logs for this specific job across all users
+                    const relevantLogs = taskLog.value.filter(t => t.job === chore.name);
+                    
+                    // 1. Check for Pending first (globally)
+                    // If any kid has an unapproved submission, the job is locked for everyone
                     const isPending = relevantLogs.some(t => t.status === 'Pending');
                     if (isPending) return { isLocked: true, reason: 'Pending' };
                     
-                    const latestApproval = Math.max(0, ...relevantLogs.filter(t => t.status === 'Approved').map(t => new Date(t.timestamp).getTime()));
-                    const isLocked = (now - latestApproval) < cooldown;
+                    // 2. Check for Approval cooldown (globally)
+                    // Look for the most recent approved completion by anyone
+                    const approvedLogs = relevantLogs.filter(t => t.status === 'Approved');
+                    const latestApprovalTime = approvedLogs.length > 0 
+                        ? Math.max(...approvedLogs.map(t => new Date(t.timestamp).getTime()))
+                        : 0;
+                    
+                    const timePassed = now - latestApprovalTime;
+                    const isLocked = timePassed < cooldown;
                     
                     if (isLocked) {
-                        const rem = cooldown - (now - latestApproval);
-                        const h = Math.floor(rem / 3600000);
-                        const m = Math.ceil((rem % 3600000) / 60000);
-                        return { isLocked: true, reason: 'Completed', timeLeft: h > 0 ? `${h}h` : `${m}m` };
+                        const remaining = cooldown - timePassed;
+                        const h = Math.floor(remaining / 3600000);
+                        const m = Math.ceil((remaining % 3600000) / 60000);
+                        return { 
+                            isLocked: true, 
+                            reason: 'Completed', 
+                            timeLeft: h > 0 ? `${h}h` : `${m}m` 
+                        };
                     }
+                    
                     return { isLocked: false };
                 };
 
-                const getChoreStatus = (chore, isGlobal = false) => {
-                    const lock = getChoreLock(chore, isGlobal);
+                const getChoreStatus = (chore) => {
+                    const lock = getChoreLock(chore);
                     if (lock.reason === 'Pending') return 'Pending';
                     if (lock.reason === 'Completed') return 'Approved';
                     return null;
                 };
 
-                const getChoreButtonLabel = (chore, isGlobal = false) => {
-                    const lock = getChoreLock(chore, isGlobal);
+                const getChoreButtonLabel = (chore) => {
+                    const lock = getChoreLock(chore);
                     if (lock.reason === 'Pending') return 'Reviewing';
                     if (lock.reason === 'Completed') return lock.timeLeft;
                     return 'Finish';
@@ -586,7 +605,18 @@
                 const completeChore = async (chore) => {
                     submitting.value = chore.name;
                     try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: chore.name, points: chore.basePoints, status: 'Pending' } }) });
+                        await fetch(API_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ 
+                                action: 'logTask', 
+                                data: { 
+                                    userName: currentUser.value.name, 
+                                    choreName: chore.name, 
+                                    points: chore.basePoints, 
+                                    status: 'Pending' 
+                                } 
+                            }) 
+                        });
                         await fetchData();
                         showToast("Quest Logged!");
                     } catch (e) { 
@@ -599,7 +629,18 @@
                 const buyItem = async (item) => {
                     submitting.value = item.name;
                     try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: currentUser.value.name, choreName: `TREASURE: ${item.name}`, points: -Math.abs(item.cost), status: 'Pending' } }) });
+                        await fetch(API_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ 
+                                action: 'logTask', 
+                                data: { 
+                                    userName: currentUser.value.name, 
+                                    choreName: `TREASURE: ${item.name}`, 
+                                    points: -Math.abs(item.cost), 
+                                    status: 'Pending' 
+                                } 
+                            }) 
+                        });
                         await fetchData();
                         showToast("Wish Sent!");
                     } catch (e) { console.error(e); }
@@ -652,7 +693,19 @@
                     if (!manualAdjust.value.amount || !manualAdjust.value.reason) return;
                     submitting.value = 'manual';
                     try {
-                        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logTask', data: { userName: parentViewKid.value, choreName: manualAdjust.value.reason, points: manualAdjust.value.amount, status: 'Approved', approvedBy: currentUser.value.name } }) });
+                        await fetch(API_URL, { 
+                            method: 'POST', 
+                            body: JSON.stringify({ 
+                                action: 'logTask', 
+                                data: { 
+                                    userName: parentViewKid.value, 
+                                    choreName: manualAdjust.value.reason, 
+                                    points: manualAdjust.value.amount, 
+                                    status: 'Approved', 
+                                    approvedBy: currentUser.value.name 
+                                } 
+                            }) 
+                        });
                         manualAdjust.value = { amount: null, reason: "" };
                         await fetchData();
                         showToast("Adjusted!");
